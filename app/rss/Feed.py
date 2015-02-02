@@ -1,6 +1,7 @@
 __author__ = 'Dirrk'
 import xml.etree.ElementTree as ET
 import time
+import logging
 
 import requests
 from app.rss.Item import Item
@@ -51,8 +52,13 @@ class Feed:
                         items.append(temporary_item)
                 except ValueError:
                     print "Could not process an rss_item skipping"
-        except ValueError:
+        except ValueError as e:
             print "Unable to retrieve rss data or failed parsing data"
+            logging.exception(e)
+        except ET.ParseError as e:
+            print "ParseError with feed ", e.message
+            logging.exception(e)
+
 
         self.last_run = time.time()
         return items

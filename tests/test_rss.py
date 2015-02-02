@@ -7,11 +7,19 @@ import time
 from app.rss.Feed import Feed
 from app.rss.Item import Item
 from app.rss.Subscription import Subscription
+import requests
 
 
 """"
  Testing features / objects in this application
 """
+
+
+class TestRSSSite(unittest.TestCase):
+    def test_rssSite(self):
+        r = requests.get(
+            "https://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=TOKEN")
+        self.assertRegexpMatches(r.content, 'rss')
 
 
 class TestItemObject(unittest.TestCase):
