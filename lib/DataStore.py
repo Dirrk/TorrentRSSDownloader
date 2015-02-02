@@ -6,6 +6,7 @@ import logging
 import os.path as path
 
 
+
 # from app.rss.Subscription import Subscription
 
 
@@ -17,6 +18,50 @@ class DataStore():
         self.__db_file__ = a_file
         self.modified = 0
 
+    def create(self):
+
+        if not path.isfile(self.__db_file__):
+            logging.info("Creating db")
+            conn = sqlite3.connect(self.__db_file__)
+            c = conn.cursor()
+
+            c.execute(
+                '''
+                CREATE TABLE Feeds
+                (
+                  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                  name TEXT NOT NULL,
+                  url TEXT NOT NULL,
+                  frequency INTEGER NOT NULL DEFAULT '300',
+                  last_pub TEXT NOT NULL
+                );
+                CREATE TABLE Settings
+                (
+                    name TEXT NOT NULL,
+                    version INTEGER NOT NULL DEFAULT '0'
+                );
+                CREATE TABLE SubscriptionEpisodes
+                (
+                    subscriptionid INTEGER NOT NULL,
+                    episode TEXT NOT NULL
+                );
+                CREATE TABLE Subscriptions
+                (
+                    id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    feedid INTEGER NOT NULL,
+                    options TEXT NOT NULL DEFAULT '{"reg_allow":"","onlyOnce":false,"episode_match":false,"enabled":false,"waitTime":0,"preferred_release":"","maxSize":1000000000,"lastMatched":0,"minSize":0,"reg_exclude":"555DO-NOT-MATCH-THIS-REGEX-ESCAPE555","quality":-1}'
+                );
+                '''
+            )
+            conn.commit()
+            c.execute('''INSERT INTO SETTINGS VALUES ('Feeds', 1);''')
+            conn.commit()
+
+        else:
+            logging.info("Upgrade db")
+            # self.upgrade()
+
     def load(self):
         """
         Create create database if file doesn't exist
@@ -26,7 +71,6 @@ class DataStore():
         :return: None
         """
         if not path.isfile(self.__db_file__):
-            pass
             logging.warn("File does not exist %s" % self.__db_file__)
             # self.create()
 
@@ -34,16 +78,12 @@ class DataStore():
 
             conn = sqlite3.connect(self.__db_file__)
 
-            if get_modified(conn) == self.modified:
-                # self.feeds = load_feeds(self.__db_file__)
-                logging.info("Not modified")
-            else:
-                self.modified = get_modified(conn)
-                logging.info("Modified")
-                # load_sub_episodes(self.__db_file__, self.subscriptions)
+            # Load modified version
+            self.modified = get_modified(conn)
+            self.feeds = get_feeds(conn)
+            self.subscriptions = get_subscriptions(conn)
+            self.torrents = get_torrents(conn)
 
-                # TODO Complete torrent info
-                # self.torrents = load_torrents(self.__db_file__)
             conn.close()
 
 
@@ -60,5 +100,16 @@ def get_modified(conn):
         return int(db_mod[0])
 
 
-def load_feeds(a_file):
-    return a_file
+def get_feeds(conn):
+    feeds = {}
+    return feeds
+
+
+def get_subscriptions(conn):
+    subscriptions = {}
+    return subscriptions
+
+
+def get_torrents(conn):
+    # TODO Complete torrent setup
+    return {}
