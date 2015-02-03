@@ -19,7 +19,7 @@ class TestRSSSite(unittest.TestCase):
     def test_rssSite(self):
         r = requests.get(
             "https://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=TOKEN")
-        self.assertRegexpMatches(r.content, 'rss')
+        self.assertRegexpMatches(r.content, 'rss', "iptorrents is not responding correctly")
 
 
 class TestItemObject(unittest.TestCase):

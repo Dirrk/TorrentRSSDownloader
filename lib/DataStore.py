@@ -6,10 +6,6 @@ import logging
 import os.path as path
 
 
-
-# from app.rss.Subscription import Subscription
-
-
 class DataStore():
     def __init__(self, a_file):
         self.feeds = {}
@@ -35,16 +31,28 @@ class DataStore():
                   frequency INTEGER NOT NULL DEFAULT '300',
                   last_pub TEXT NOT NULL
                 );
+                '''
+            )
+            c.execute(
+                '''
                 CREATE TABLE Settings
                 (
                     name TEXT NOT NULL,
                     version INTEGER NOT NULL DEFAULT '0'
                 );
+                '''
+            )
+            c.execute(
+                '''
                 CREATE TABLE SubscriptionEpisodes
                 (
                     subscriptionid INTEGER NOT NULL,
                     episode TEXT NOT NULL
                 );
+                '''
+            )
+            c.execute(
+                '''
                 CREATE TABLE Subscriptions
                 (
                     id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -54,9 +62,10 @@ class DataStore():
                 );
                 '''
             )
+            c.execute("INSERT INTO SETTINGS VALUES ('Feeds', 1);")
             conn.commit()
-            c.execute('''INSERT INTO SETTINGS VALUES ('Feeds', 1);''')
-            conn.commit()
+            self.modified = 1
+            conn.close()
 
         else:
             logging.info("Upgrade db")
