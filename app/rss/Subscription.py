@@ -23,7 +23,7 @@ import re
 
 
 class Subscription:
-    def __init__(self, id, name, feed_id, inopts):
+    def __init__(self, id, name, feed_id, inopts={}):
         """
         Subscription Object
         :param name:
@@ -36,19 +36,20 @@ class Subscription:
         self.episodes = []
         options = {}
 
-        options['reg_allow'] = inopts.reg_allow if inopts.get('reg_allow') is not None else ""
-        options['reg_exclude'] = inopts.reg_exclude if inopts.get(
+        options['reg_allow'] = inopts.get('reg_allow') if inopts.get('reg_allow') is not None else ""
+        options['reg_exclude'] = inopts.get('reg_exclude') if inopts.get(
             'reg_exclude') is not None else "555DO-NOT-MATCH-THIS-REGEX-ESCAPE555"
-        options['enabled'] = inopts.enabled if inopts.get('enabled') is not None else False
-        options['waitTime'] = inopts.waitTime if inopts.get('waitTime') is not None else 0  # Hours
-        options['lastMatched'] = inopts.lastMatched if inopts.get('lastMatched') is not None else 0
-        options['minSize'] = inopts.minSize if inopts.get('minSize') is not None else 0
-        options['maxSize'] = inopts.maxSize if inopts.get(
+        options['enabled'] = inopts.get('enabled') if inopts.get('enabled') is not None else False
+        options['waitTime'] = inopts.get('waitTime') if inopts.get('waitTime') is not None else 0  # Hours
+        options['lastMatched'] = inopts.get('lastMatched') if inopts.get('lastMatched') is not None else 0
+        options['minSize'] = inopts.get('minSize') if inopts.get('minSize') is not None else 0
+        options['maxSize'] = inopts.get('maxSize') if inopts.get(
             'maxSize') is not None else 1000000000  # Max of one petabyte ;)
-        options['quality'] = inopts.quality if inopts.get('quality') is not None else -1
-        options['episode_match'] = inopts.episode_match if inopts.get('episode_match') is not None else False
-        options['onlyOnce'] = inopts.onlyOnce if inopts.get('onlyOnce') is not None else False
-        options['preferred_release'] = inopts.preferred_release if inopts.get('preferred_release') is not None else ""
+        options['quality'] = inopts.get('quality') if inopts.get('quality') is not None else -1
+        options['episode_match'] = inopts.get('episode_match') if inopts.get('episode_match') is not None else False
+        options['onlyOnce'] = inopts.get('onlyOnce') if inopts.get('onlyOnce') is not None else False
+        options['preferred_release'] = inopts.get('preferred_release') if inopts.get(
+            'preferred_release') is not None else ""
 
         self.__options__ = options
 

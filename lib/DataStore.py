@@ -2,6 +2,10 @@ __author__ = 'Dirrk'
 
 import sqlite3
 import logging
+import json
+
+from app.rss.Feed import Feed
+from app.rss.Subscription import Subscription
 
 import os.path as path
 
@@ -29,7 +33,7 @@ class DataStore():
                   name TEXT NOT NULL,
                   url TEXT NOT NULL,
                   frequency INTEGER NOT NULL DEFAULT '300',
-                  last_pub TEXT NOT NULL
+                  last_pub INTEGER NOT NULL DEFAULT '0'
                 );
                 '''
             )
@@ -77,23 +81,43 @@ class DataStore():
         Load Feeds
         Load Subscriptions
         TODO: Load torrents
-        :return: None
+        :return: Boolean if (feeds needed to be recreated)
         """
         if not path.isfile(self.__db_file__):
             logging.warn("File does not exist %s" % self.__db_file__)
-            # self.create()
+            self.create()
+        else:
+            self.modified = -1
+            self.reload()
+
+        return True
+
+    def reload(self):
+        """
+
+        :return:
+        """
+        if not path.isfile(self.__db_file__):
+            logging.warn("File does not exist cannot reload %s" % self.__db_file__)
+            self.create()
+            return True
 
         else:
-
+            # Connect to sql
             conn = sqlite3.connect(self.__db_file__)
 
-            # Load modified version
-            self.modified = get_modified(conn)
-            self.feeds = get_feeds(conn)
+            reload_feeds = self.modified < get_modified(conn)
+
+            if reload_feeds:
+                self.feeds = get_feeds(conn)
+
+            # Retrieve data
             self.subscriptions = get_subscriptions(conn)
             self.torrents = get_torrents(conn)
+            self.modified = get_modified(conn)
 
             conn.close()
+            return reload_feeds
 
 
 def get_modified(conn):
@@ -111,11 +135,54 @@ def get_modified(conn):
 
 def get_feeds(conn):
     feeds = {}
+
+    c = conn.cursor()
+
+    c.execute(
+        '''
+            SELECT id, url, name, frequency, last_pub FROM Feeds;
+        '''
+    )
+    for feed in c.fetchall():
+        # id, url, name="new feed", frequency=300
+        new_feed = Feed(int(feed[0]), feed[1], feed[2], int(feed[3]))
+        try:
+            new_feed.last_run = float(feed[4])
+        except Exception:
+            pass
+
+        feeds['Feed-' + str(feed[0])] = new_feed
+        logging.info('Added Feed-' + str(feed[0]))
+
     return feeds
 
 
 def get_subscriptions(conn):
+
     subscriptions = {}
+
+    c = conn.cursor()
+
+    c.execute(
+        '''
+            SELECT id, name, feedid, options FROM Subscriptions;
+        '''
+    )
+    for sub in c.fetchall():
+        opts = {}
+        try:
+            opts = json.loads(sub[3])
+            for key in opts.keys():
+                print key
+        except Exception as e:
+            print "Exception"
+            print e.message
+            opts = {}
+
+        new_sub = Subscription(int(sub[0]), sub[1], int(sub[2]), opts)
+        subscriptions['Subscription-' + str(sub[0])] = new_sub
+        logging.info("Added Subscription-" + str(sub[0]))
+
     return subscriptions
 
 
