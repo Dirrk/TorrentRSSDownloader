@@ -59,6 +59,8 @@ class Feed:
             print "ParseError with feed ", e.message
             logging.exception(e)
 
+        if len(items) > 0:
+            self.last_pub = items[0].pubDate
 
         self.last_run = time.time()
         return items
