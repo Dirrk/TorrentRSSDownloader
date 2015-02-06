@@ -66,8 +66,8 @@ def _dechunk(chunks):
 def torrent_file_to_dictionary(a_file):
     """
     Read in torrent file
-    :param file:
-    :return:
+    :param a_file: Torrent File
+    :return: Dictionary of info object
     """
     ret_dict = {}
 

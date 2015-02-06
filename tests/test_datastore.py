@@ -65,7 +65,6 @@ class TestDataStoreObject(unittest.TestCase):
         self.assertIsInstance(self.db_test.feeds['Feed-1'], Feed)
 
         # Test Subscriptions
-
         self.assertEqual(self.db_test.subscriptions['Subscription-1'].name, 'Test-Subscription')
         self.assertIsInstance(self.db_test.subscriptions['Subscription-1'], Subscription)
         self.assertGreater(len(self.db_test.subscriptions['Subscription-1'].episodes), 0)

@@ -73,7 +73,6 @@ class DataStore():
 
         else:
             logging.info("Upgrade db")
-            # self.upgrade()
 
     def load(self):
         """
@@ -118,6 +117,49 @@ class DataStore():
 
             conn.close()
             return reload_feeds
+
+    # Called after a subscription has been matched which is the only time anything could change
+    def update_subscription(self, sub, episode=None):
+
+        if not path.isfile(self.__db_file__):
+            self.create()
+
+        conn = sqlite3.connect(self.__db_file__)
+
+        new_opts = json.dumps(sub.options)
+
+        c = conn.cursor()
+        if episode is not None:
+            c.execute(
+                '''
+                  INSERT INTO SubscriptionEpisodes(episode, subscriptionid) VALUES (?, ?)
+                ''', (episode, sub.id)
+            )
+        c.execute(
+            '''
+              UPDATE Subscriptions SET options=? WHERE id=?
+            ''', (new_opts, sub.id)
+        )
+        conn.commit()
+        conn.close()
+
+    # Called every time feed runs
+    def update_feed(self, feed):
+
+        if not path.isfile(self.__db_file__):
+            self.create()
+
+        conn = sqlite3.connect(self.__db_file__)
+
+        c = conn.cursor()
+
+        c.execute(
+            '''
+              UPDATE Feeds SET last_pub=? WHERE id=?
+            ''', (feed.last_pub, feed.id)
+        )
+        conn.commit()
+        conn.close()
 
 
 def get_modified(conn):
@@ -183,16 +225,26 @@ def get_subscriptions(conn):
         new_sub = Subscription(int(sub[0]), sub[1], int(sub[2]), opts)
         subscriptions['Subscription-' + str(sub[0])] = new_sub
         logging.info("Added Subscription-" + str(sub[0]))
-        d = conn.cursor()
-        d.execute(
-            '''
-                SELECT episode FROM SubscriptionEpisodes WHERE subscriptionid=?
-            ''', (new_sub.id,)
-        )
-        for episode in d.fetchall():
-            new_sub.add_episode(episode[0])
+        episodes = get_episodes(conn, new_sub.id)
+
+        for episode in episodes:
+            new_sub.add_episode(episode)
 
     return subscriptions
+
+
+def get_episodes(conn, id):
+    d = conn.cursor()
+    d.execute(
+        '''
+          SELECT episode FROM SubscriptionEpisodes WHERE subscriptionid=?
+        ''', (id,)
+    )
+    episodes = []
+    for ep in d.fetchall():
+        episodes.append(ep[0])
+
+    return episodes
 
 
 def get_torrents(conn):
