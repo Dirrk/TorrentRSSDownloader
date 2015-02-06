@@ -60,7 +60,7 @@ class Feed:
             logging.exception(e)
 
         if len(items) > 0:
-            self.last_pub = items[0].pubDate
+            self.last_pub = time.mktime(items[0].pubDate.timetuple())
 
         self.last_run = time.time()
         return items
