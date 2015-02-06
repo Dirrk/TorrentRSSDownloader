@@ -169,6 +169,7 @@ def get_subscriptions(conn):
         '''
     )
     for sub in c.fetchall():
+
         opts = {}
         try:
             opts = json.loads(sub[3])
@@ -182,6 +183,14 @@ def get_subscriptions(conn):
         new_sub = Subscription(int(sub[0]), sub[1], int(sub[2]), opts)
         subscriptions['Subscription-' + str(sub[0])] = new_sub
         logging.info("Added Subscription-" + str(sub[0]))
+        d = conn.cursor()
+        d.execute(
+            '''
+                SELECT episode FROM SubscriptionEpisodes WHERE subscriptionid=?
+            ''', (new_sub.id,)
+        )
+        for episode in d.fetchall():
+            new_sub.add_episode(episode[0])
 
     return subscriptions
 

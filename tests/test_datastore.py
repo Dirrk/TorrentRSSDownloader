@@ -42,6 +42,11 @@ class TestDataStoreObject(unittest.TestCase):
               INSERT INTO Subscriptions(name, feedid) VALUES ('Test-Subscription', 1);
             '''
         )
+        conn.execute(
+            '''
+              INSERT INTO SubscriptionEpisodes(episode, subscriptionid) VALUES ('S01E01', 1)
+            '''
+        )
 
         conn.commit()
         conn.close()
@@ -63,6 +68,7 @@ class TestDataStoreObject(unittest.TestCase):
 
         self.assertEqual(self.db_test.subscriptions['Subscription-1'].name, 'Test-Subscription')
         self.assertIsInstance(self.db_test.subscriptions['Subscription-1'], Subscription)
+        self.assertGreater(len(self.db_test.subscriptions['Subscription-1'].episodes), 0)
 
     @classmethod
     def setUpClass(cls):
