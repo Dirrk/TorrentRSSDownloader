@@ -69,6 +69,23 @@ class TestDataStoreObject(unittest.TestCase):
         self.assertIsInstance(self.db_test.subscriptions['Subscription-1'], Subscription)
         self.assertGreater(len(self.db_test.subscriptions['Subscription-1'].episodes), 0)
 
+    def test_testObjects(self):
+
+        self.db_test.reload()
+
+        sub = self.db_test.subscriptions['Subscription-1']
+        feed = self.db_test.feeds['Feed-1']
+        sub.add_episode('S01E02')
+        self.assertEqual(len(sub.episodes), 2)
+        self.db_test.update_subscription(sub, 'S01E02')
+
+        # last = feed.last_pub
+        # Not working cause wrong feed url
+        # self.assertNotEqual(last, feed.last_pub)
+        self.db_test.update_feed(feed)
+
+
+
     @classmethod
     def setUpClass(cls):
         if path.exists(db_test_file):

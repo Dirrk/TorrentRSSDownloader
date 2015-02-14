@@ -6,7 +6,6 @@ import json
 
 from app.rss.Feed import Feed
 from app.rss.Subscription import Subscription
-
 import os.path as path
 
 
@@ -126,7 +125,7 @@ class DataStore():
 
         conn = sqlite3.connect(self.__db_file__)
 
-        new_opts = json.dumps(sub.options)
+        new_opts = json.dumps(sub.__options__)
 
         c = conn.cursor()
         if episode is not None:
