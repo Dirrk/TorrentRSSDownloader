@@ -9,6 +9,8 @@ db_file = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\datab
 db_test_file = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\test_database.db"
 from lib.DataStore import DataStore
 
+KEEP_TEST_FILE = False
+
 
 class TestDataStoreObject(unittest.TestCase):
     def setUp(self):
@@ -123,4 +125,9 @@ class TestDataStoreObject(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         if path.exists(db_test_file):
+            rm(db_test_file)
+
+    @classmethod
+    def tearDownClass(cls):
+        if KEEP_TEST_FILE is not True:
             rm(db_test_file)
