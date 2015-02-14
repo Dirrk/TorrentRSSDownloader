@@ -53,7 +53,7 @@ class TestDataStoreObject(unittest.TestCase):
 
     def test_reload(self):
 
-        # First load no need to redo feeds
+        # First load need to redo feeds
         self.assertTrue(self.db_test.reload())
 
         # Loaded no need to redo feeds
@@ -69,22 +69,56 @@ class TestDataStoreObject(unittest.TestCase):
         self.assertIsInstance(self.db_test.subscriptions['Subscription-1'], Subscription)
         self.assertGreater(len(self.db_test.subscriptions['Subscription-1'].episodes), 0)
 
-    def test_testObjects(self):
+    def test_update_subscription(self):
 
         self.db_test.reload()
 
         sub = self.db_test.subscriptions['Subscription-1']
-        feed = self.db_test.feeds['Feed-1']
+        self.db_test.subscriptions['Subscription-2'] = Subscription(2, "Subscription2", 1, {})
         sub.add_episode('S01E02')
         self.assertEqual(len(sub.episodes), 2)
+
+        # Add Subscription
+        self.assertEqual(self.db_test.subscriptions['Subscription-2'].id, 2)
+        self.assertEqual(self.db_test.subscriptions['Subscription-2'].feedId, 1)
+
+        # Save sub into db
         self.db_test.update_subscription(sub, 'S01E02')
 
-        # last = feed.last_pub
-        # Not working cause wrong feed url
-        # self.assertNotEqual(last, feed.last_pub)
-        self.db_test.update_feed(feed)
+        # Reload from scratch
+        self.db_test.reload()
 
+        sub1 = self.db_test.subscriptions['Subscription-1']
+        self.assertEqual(len(sub1.episodes), 2)
+        self.assertEqual(len(self.db_test.subscriptions.keys()), 1)
 
+    def update_feed(self):
+
+        self.assertTrue(self.db_test.reload())
+
+        feed = self.db_test.feeds['Feed-1']
+        self.assertEqual(feed.id, 1)
+        self.assertEqual(feed.last_pub, 0)
+
+        # Declare arbitrary number for new last_pub
+        new_pub = 100000
+        feed.last_pub = new_pub
+
+        # Changed local variable
+        self.assertEqual(feed.last_pub, new_pub)
+
+        # Which was a pointer to that feed
+        self.assertEqual(self.db_test.feeds['Feed-1'].last_pub, new_pub)
+
+        # Force loaded without saving should be back to 0
+        self.db_test.load()
+        self.assertEqual(self.db_test.feeds['Feed-1'].last_pub, 0)
+
+        # Manually change again then save it then load and prove
+        self.db_test.feeds['Feed-1'].last_pub = new_pub
+        self.db_test.update_feed(self.db_test.feeds['Feed-1'])
+        self.db_test.load()
+        self.assertEqual(self.db_test.feeds['Feed-1'].last_pub, new_pub)
 
     @classmethod
     def setUpClass(cls):
