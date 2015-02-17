@@ -80,7 +80,7 @@ def torrent_file_to_dictionary(a_file):
         match = re.match('d.*e6.pieces', torrent_info)
         torrent_line = match.group()[:-8]
 
-        # Cut off bencode with ee to stop any list / dict
+        # Cut off bencode with eee to stop any list / dict
         try:
             test_data = bdecode(torrent_line + 'eee')
             ret_dict = test_data['info']

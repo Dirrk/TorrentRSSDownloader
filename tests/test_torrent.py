@@ -4,6 +4,7 @@ import unittest
 
 import app.torrent.bencode as bencode
 import os
+from app.torrent.Torrent import Torrent
 
 
 class TestBEncode(unittest.TestCase):
@@ -34,3 +35,11 @@ class TestBEncode(unittest.TestCase):
                 # values = bencodeToDict(data)
 
 
+class TestTorrent(unittest.TestCase):
+    def test_torrentCreate(self):
+        a = Torrent(
+            "https://iptorrents.com/download.php/1323172/Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD.torrent?torrent_pass=TOKEN")
+        self.assertEqual(a.file,
+                         "F:\\torrent_files\\Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD.torrent")
+        self.assertTrue(a.download())
+        self.assertEqual(a.folder, "Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD")

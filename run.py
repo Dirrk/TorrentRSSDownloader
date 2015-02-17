@@ -4,9 +4,8 @@ import argparse
 import sys
 import logging
 
-from lib.config import conf
+import app.settings as settings
 import app.TorrentDownloadService as TorrentDownloadService
-from lib.jsof import reader as parse
 
 
 
@@ -20,11 +19,11 @@ def main(args):
 
     # Setup Logging
     root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
+    root.setLevel(settings.LOG_LEVEL)
 
     # Create streaming handler to stdout
     ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
+    ch.setLevel(settings.LOG_LEVEL)
 
     # Define Format
     ch.setFormatter(
@@ -35,15 +34,8 @@ def main(args):
 
     root.info("Starting application with config %s", config_file)
 
-    # Parse config into object
-    config = conf(parse(config_file))
-
-    # Change log level
-    if config.get('log_level') is not None:
-        root.setLevel(config.get('log_level'))
-
     # Start application
-    TorrentDownloadService(config).start()
+    TorrentDownloadService().start()
 
 
 if __name__ == "__main__":

@@ -4,16 +4,19 @@ import sqlite3
 import logging
 import json
 
+import app.settings as settings
 from app.rss.Feed import Feed
 from app.rss.Subscription import Subscription
 import os.path as path
 
 
 class DataStore():
-    def __init__(self, a_file):
+    def __init__(self, a_file=None):
         self.feeds = {}
         self.subscriptions = {}
         self.torrents = {}
+        if a_file is None:
+            a_file = settings.DATA_FILE
         self.__db_file__ = a_file
         self.modified = 0
 
