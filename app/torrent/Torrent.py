@@ -148,14 +148,16 @@ def extract_file(archive, dst):
     # Windows use 7zip
     if os.name == 'nt':
         if settings.SEVEN_ZIP is not None:
-            cmd = settings.SEVEN_ZIP, 'e', '-o"' + dst + '"', '"' + archive + '"'
+            # C:\7zip\7z.exe e -o"F:\test-area\dev\Plex_Area\Drive A\TV\Show ABC\S1" "F:\test-area\dev\complete\My.Favorite.Show.S01E02\Laggies.2014.LIMITED.720p.BRRiP.X264.Ac3.CrEwSaDe.Sample.zip.001"
+            cmd = settings.SEVEN_ZIP, '-y', 'x', '-o' + dst, archive
+            print cmd
             try:
-                subprocess.call(cmd)
+                subprocess.check_call(cmd)
                 return True
             except subprocess.CalledProcessError as e:
                 print e
                 logging.exception(e)
-                print "Failed to extract file"
+                print "Failed to extract file", archive
                 return False
 
         else:

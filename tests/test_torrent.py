@@ -4,7 +4,8 @@ import unittest
 
 import app.torrent.bencode as bencode
 import os
-from app.torrent.Torrent import Torrent
+from app.torrent.Torrent import Torrent, TORRENT_STATES, extract_file
+
 
 
 class TestBEncode(unittest.TestCase):
@@ -50,12 +51,14 @@ class TestTorrent(unittest.TestCase):
         self.assertTrue(os.path.exists(self.a.file))
 
     def test_check_status(self):
-        self.assertEqual(self.a.status, 0)
+        self.assertEqual(self.a.status, TORRENT_STATES["NEW"])
         self.assertFalse(self.a.check_status())
-        self.assertEqual(self.a.status, 1)
+        self.assertEqual(self.a.status, TORRENT_STATES["TORRENT_RETRIEVED"])
 
     def test_organize(self):
         self.assertEqual(1, 0)
 
     def test_extract(self):
-        self.assertEqual(1, 0)
+        self.assertTrue(extract_file(
+            "F:\\test-area\\dev\\complete\\My.Favorite.Show.S01E02\\Laggies.2014.LIMITED.720p.BRRiP.X264.Ac3.CrEwSaDe.Sample.zip.001",
+            "F:\\test-area\\dev\\Plex_Area\\Drive A\\TV\\Show ABC\\S1"))
