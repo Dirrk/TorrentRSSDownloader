@@ -95,7 +95,7 @@ class Torrent:
         files = []
         for (dirpath, dirnames, filenames) in os.walk(working_dir):
             for file in filenames:
-                files.append(dirpath + file)
+                files.append(os.path.join(dirpath, file))
             break
 
         # Handle where there is just one large file
@@ -107,7 +107,7 @@ class Torrent:
         match_archive = None
         match_video = None
         match_video_size = 0
-        search_archives = re.compile('[\.](rar|000|zip|tar)$', re.IGNORECASE)
+        search_archives = re.compile('[\.](rar|001|zip|tar)$', re.IGNORECASE)
         search_movies = re.compile('[\.](mkv|mp4|avi|m4v|mpeg|mpg|vob|wmv)$', re.IGNORECASE)
         ignore_files = re.compile('(.*sample.*|[\.](nfo|sfv|r[0-9][0-9])$)', re.IGNORECASE)
 
@@ -126,6 +126,9 @@ class Torrent:
         print "Match Videos:", match_video
 
         if match_archive is None:
+            if match_video is None:
+                print "Couldn't find match"
+                return
             shutil.copy(match_video, self.final_location)
             return
 
