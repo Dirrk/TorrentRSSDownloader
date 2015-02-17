@@ -51,11 +51,9 @@ class TestTorrent(unittest.TestCase):
         self.assertEqual(self.a.folder, "Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD")
         self.assertTrue(os.path.exists(self.a.file))
 
-
     def test_check_status(self):
         self.assertEqual(self.a.status, TORRENT_STATES["NEW"])
-        self.assertFalse(self.a.check_status())
-        self.assertEqual(self.a.status, TORRENT_STATES["TORRENT_RETRIEVED"])
+        self.assertTrue(self.a.check_status())
 
     def test_organize_3(self):
         first = Torrent(

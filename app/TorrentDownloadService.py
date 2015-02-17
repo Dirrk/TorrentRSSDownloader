@@ -8,7 +8,6 @@ log = logging.getLogger()
 from lib.DataStore import DataStore
 
 
-
 class TorrentService:
     def __init__(self):
         self.db = None

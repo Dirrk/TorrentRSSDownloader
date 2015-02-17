@@ -95,8 +95,9 @@ class Subscription:
         # Second round of matching
         for match in matches:
             # Size / Quality
-            if (match.size == -1 or (match.size > self.__options__.get('minSize') and match.size < self.__options__.get(
-                    'maxSize'))) and (match.quality == -1 or match.quality >= self.__options__.get('quality')):
+            if not (not (match.size == -1 or (match.size > self.__options__.get('minSize') and
+                                                      match.size < self.__options__.get('maxSize'))) or not (
+                            match.quality == -1 or match.quality >= self.__options__.get('quality'))):
 
                 # Find release info
                 p = pref_release.search(match.title)
