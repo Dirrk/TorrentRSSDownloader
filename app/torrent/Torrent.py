@@ -6,6 +6,7 @@ import requests
 from app.torrent.bencode import torrent_file_to_dictionary as infoParser
 import re
 import os.path as path
+import app.settings as settings
 
 
 class Torrent:
@@ -20,8 +21,7 @@ class Torrent:
             my_file = re.split('/', self.link)
             my_file = re.split('\?', my_file[-1])
 
-            # TODO Add settings.py
-            t_directory = "F:\\torrent_files"
+            t_directory = settings.TORRENT_DIRECTORY
 
             if my_file is not None:
                 self.file = path.join(t_directory, my_file[0])

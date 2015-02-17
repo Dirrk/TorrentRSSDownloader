@@ -34,12 +34,12 @@ class Subscription:
         self.name = name
         self.feedId = feed_id
         self.episodes = []
+        self.plex_id = 0
         options = {}
 
         options['reg_allow'] = inopts.get('reg_allow') if inopts.get('reg_allow') is not None else ""
         options['reg_exclude'] = inopts.get('reg_exclude') if inopts.get(
             'reg_exclude') is not None else "555DO-NOT-MATCH-THIS-REGEX-ESCAPE555"
-        options['enabled'] = inopts.get('enabled') if inopts.get('enabled') is not None else False
         options['waitTime'] = inopts.get('waitTime') if inopts.get('waitTime') is not None else 0  # Hours
         options['lastMatched'] = inopts.get('lastMatched') if inopts.get('lastMatched') is not None else 0
         options['minSize'] = inopts.get('minSize') if inopts.get('minSize') is not None else 0
@@ -68,9 +68,6 @@ class Subscription:
     def match(self, items):
 
         print "Matching"
-        if self.__options__.get('enabled') is not True:
-            print "Not enabled"
-            return []
         if self.__options__.get('waitTime') != 0 and (datetime.datetime.now() - time.localtime(
                 self.__options__.get('lastMatched'))).seconds < self.__options__.get('waitTime') * 3600:
             print "WaitTime: ", self.__options__.get("waitTime")

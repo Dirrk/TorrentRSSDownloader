@@ -64,7 +64,9 @@ class DataStore():
                     id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     feedid INTEGER NOT NULL,
-                    options TEXT NOT NULL DEFAULT '{"reg_allow":"","onlyOnce":false,"episode_match":false,"enabled":false,"waitTime":0,"preferred_release":"","maxSize":1000000000,"lastMatched":0,"minSize":0,"reg_exclude":"555DO-NOT-MATCH-THIS-REGEX-ESCAPE555","quality":-1}'
+                    options TEXT NOT NULL DEFAULT '{"reg_allow":"","onlyOnce":false,"episode_match":false,"enabled":false,"waitTime":0,"preferred_release":"","maxSize":1000000000,"lastMatched":0,"minSize":0,"reg_exclude":"555DO-NOT-MATCH-THIS-REGEX-ESCAPE555","quality":-1}',
+                    enabled INTEGER DEFAULT '0',
+                    plex_id INTEGER DEFAULT '0'
                 );
                 '''
             )
@@ -209,14 +211,14 @@ def get_subscriptions(conn):
 
     c.execute(
         '''
-            SELECT id, name, feedid, options FROM Subscriptions;
+            SELECT id, name, feedid, plex_id, options FROM Subscriptions WHERE enabled = 1;
         '''
     )
     for sub in c.fetchall():
 
         opts = {}
         try:
-            opts = json.loads(sub[3])
+            opts = json.loads(sub[4])
             for key in opts.keys():
                 print key
         except Exception as e:
@@ -225,6 +227,9 @@ def get_subscriptions(conn):
             opts = {}
 
         new_sub = Subscription(int(sub[0]), sub[1], int(sub[2]), opts)
+
+        new_sub.plex_id = int(sub[3])
+
         subscriptions['Subscription-' + str(sub[0])] = new_sub
         logging.info("Added Subscription-" + str(sub[0]))
         episodes = get_episodes(conn, new_sub.id)

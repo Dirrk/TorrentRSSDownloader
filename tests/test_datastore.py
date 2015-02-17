@@ -41,7 +41,7 @@ class TestDataStoreObject(unittest.TestCase):
         )
         conn.execute(
             '''
-              INSERT INTO Subscriptions(name, feedid) VALUES ('Test-Subscription', 1);
+              INSERT INTO Subscriptions(name, feedid, enabled) VALUES ('Test-Subscription', 1, 1);
             '''
         )
         conn.execute(

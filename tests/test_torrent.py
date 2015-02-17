@@ -40,6 +40,7 @@ class TestTorrent(unittest.TestCase):
         a = Torrent(
             "https://iptorrents.com/download.php/1323172/Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD.torrent?torrent_pass=TOKEN")
         self.assertEqual(a.file,
-                         "F:\\torrent_files\\Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD.torrent")
+                         "F:\\test-area\\dev\\monitor\\Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD.torrent")
         self.assertTrue(a.download())
         self.assertEqual(a.folder, "Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD")
+        self.assertTrue(os.path.exists(a.file))
