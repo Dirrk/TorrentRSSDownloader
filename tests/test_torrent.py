@@ -36,11 +36,26 @@ class TestBEncode(unittest.TestCase):
 
 
 class TestTorrent(unittest.TestCase):
-    def test_torrentCreate(self):
-        a = Torrent(
+    def setUp(self):
+        self.a = Torrent(
             "https://iptorrents.com/download.php/1323172/Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD.torrent?torrent_pass=TOKEN")
-        self.assertEqual(a.file,
+
+    def test_torrent_file(self):
+        self.assertEqual(self.a.file,
                          "F:\\test-area\\dev\\monitor\\Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD.torrent")
-        self.assertTrue(a.download())
-        self.assertEqual(a.folder, "Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD")
-        self.assertTrue(os.path.exists(a.file))
+
+    def test_download_file(self):
+        self.assertTrue(self.a.download())
+        self.assertEqual(self.a.folder, "Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD")
+        self.assertTrue(os.path.exists(self.a.file))
+
+    def test_check_status(self):
+        self.assertEqual(self.a.status, 0)
+        self.assertFalse(self.a.check_status())
+        self.assertEqual(self.a.status, 1)
+
+    def test_organize(self):
+        self.assertEqual(1, 0)
+
+    def test_extract(self):
+        self.assertEqual(1, 0)

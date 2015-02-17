@@ -9,6 +9,10 @@ __DEBUG__ = True
 LOG_LEVEL = 10
 DATA_FILE = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\torrents.db"
 TORRENT_DIRECTORY = "F:\\test-area\\dev\\monitor"
+DOWNLOAD_DIRECTORY = "F:\\test-area\\dev\\downloading"
+COMPLETE_DIRECTORY = "F:\\test-area\\dev\\complete"
+SEVEN_ZIP = "C:\\7zip\\7z.exe"
+
 
 if __ENV__ == 'Production':
     __DEBUG__ = False
@@ -16,6 +20,8 @@ if __ENV__ == 'Production':
 
 elif __ENV__ == 'Stage':
     TORRENT_DIRECTORY = "F:\\test-area\\stage\\monitor"
+    DOWNLOAD_DIRECTORY = "F:\\test-area\\stage\\downloading"
+    COMPLETE_DIRECTORY = "F:\\test-area\\stage\\complete"
     print "Stage"
 
 
