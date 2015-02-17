@@ -1,6 +1,0 @@
-{
-  "debug": true,
-  "log_level": 10,
-  "dataFile": "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\torrents.db"
-  "torrent_directory": "F:\\Incoming\\monitor"
-}
