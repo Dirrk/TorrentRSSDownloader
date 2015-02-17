@@ -14,8 +14,9 @@ class Torrent:
         self.link = link
         self.status = status  # 0 - Nothing, 1 - Downloaded torrent file, 2 - Download complete, 3 - organized
         self.file = file
-        self.folder = folder
+        self.folder = folder  # Folder that files will be contained in
         self.subscriptionId = subscription_id
+        self.final_location = None
 
         if self.file is None:
             my_file = re.split('/', self.link)
