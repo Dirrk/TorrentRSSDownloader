@@ -53,3 +53,20 @@ class TestApiHelper(unittest.TestCase):
         data = a.get_se_array(713)
         print "SE Array:", data
         self.assertEqual(len(data), 62, "There should be 62 episodes of Breaking Bad")
+
+    def test_regex_1(self):
+        a = PlexHelper()
+        print a.generate_regex('Breaking Bad (2009)')
+        self.assertEqual(a.generate_regex('Breaking Bad (2009)'), 'Breaking.Bad.*')
+        self.assertEqual(a.generate_regex('Breaking Bad'), 'Breaking.Bad.*')
+        self.assertEqual(a.generate_regex('Breaking Bad.'), 'Breaking.Bad.*')
+
+    def test_regex_2(self):
+        b = ApiHelper(self.host)
+        a = PlexHelper(self.host)
+
+        shows = b.get_all_shows(2)
+        for show in shows:
+            tmp_r = a.generate_regex(show.get('title'))
+            print "Regex for show:", show.get('title'), "is", tmp_r
+            self.assertRegexpMatches(show.get('title'), tmp_r)

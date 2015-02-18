@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 
 import requests
 import app.settings as settings
+import re
 
 
 class ApiHelper():
@@ -66,6 +67,33 @@ class PlexHelper():
         ret = []
         for episode in eps:
             ret.append(to_episode_string(episode.get('parentIndex'), episode.get('index')))
+
+        return ret
+
+    def generate_regex(self, show=None):
+        if show is None:
+            raise ValueError("Show needs to be defined")
+        title = None
+        if isinstance(show, Show):
+            title = str(show.title)
+        else:
+            title = str(show)
+
+        ret = title
+
+        # Match the year case
+        match = re.search('[(][0-9A-Za-z]{2,4}[)]$', ret)
+
+        if match is not None and match.group() == ret[(-1 * len(match.group())):]:
+            ret = ret[0:(-1 * len(match.group()))]
+
+        # Remove white space
+        ret = re.sub('[\W]', '.', ret)
+
+        if ret[-1] == '.':
+            ret += '*'
+        else:
+            ret += '.*'
 
         return ret
 
