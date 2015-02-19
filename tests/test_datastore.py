@@ -85,7 +85,7 @@ class TestDataStoreObject(unittest.TestCase):
         self.assertEqual(self.db_test.subscriptions['Subscription-2'].feedId, 1)
 
         # Save sub into db
-        self.db_test.update_subscription(sub, 'S01E02')
+        self.db_test.update_subscription(sub)
 
         # Reload from scratch
         self.db_test.reload()

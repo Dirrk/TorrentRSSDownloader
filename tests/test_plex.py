@@ -68,5 +68,4 @@ class TestApiHelper(unittest.TestCase):
         shows = b.get_all_shows(2)
         for show in shows:
             tmp_r = a.generate_regex(show.get('title'))
-            print "Regex for show:", show.get('title'), "is", tmp_r
             self.assertRegexpMatches(show.get('title'), tmp_r)

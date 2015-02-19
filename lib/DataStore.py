@@ -64,7 +64,7 @@ class DataStore():
                     id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     feedid INTEGER NOT NULL,
-                    options TEXT NOT NULL DEFAULT '{"reg_allow":"","onlyOnce":false,"episode_match":false,"enabled":false,"waitTime":0,"preferred_release":"","maxSize":1000000000,"lastMatched":0,"minSize":0,"reg_exclude":"555DO-NOT-MATCH-THIS-REGEX-ESCAPE555","quality":-1}',
+                    options TEXT NOT NULL DEFAULT '{"reg_allow":"","onlyOnce":false,"episode_match":false,"waitTime":0,"preferred_release":"","maxSize":1000000000,"lastMatched":0,"minSize":0,"reg_exclude":"555DO-NOT-MATCH-THIS-REGEX-ESCAPE555","quality":-1}',
                     enabled INTEGER DEFAULT '0',
                     plex_id INTEGER DEFAULT '0'
                 );
@@ -123,7 +123,7 @@ class DataStore():
             return reload_feeds
 
     # Called after a subscription has been matched which is the only time anything could change
-    def update_subscription(self, sub, episode=None):
+    def update_subscription(self, sub):
 
         if not path.isfile(self.__db_file__):
             self.create()
@@ -133,17 +133,23 @@ class DataStore():
         new_opts = json.dumps(sub.__options__)
 
         c = conn.cursor()
-        if episode is not None:
-            c.execute(
-                '''
-                  INSERT INTO SubscriptionEpisodes(episode, subscriptionid) VALUES (?, ?)
-                ''', (episode, sub.id)
-            )
+
         c.execute(
             '''
               UPDATE Subscriptions SET options=? WHERE id=?
             ''', (new_opts, sub.id)
         )
+        c.execute(
+            '''
+              DELETE FROM SubscriptionEpisodes WHERE subscriptionid=?
+            ''', (sub.id,)
+        )
+        for episode in sub.episodes:
+            c.execute(
+                '''
+                  INSERT INTO SubscriptionEpisodes(episode, subscriptionid) VALUES (?, ?)
+                ''', (episode, sub.id)
+            )
         conn.commit()
         conn.close()
 
