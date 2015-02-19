@@ -20,20 +20,20 @@ class ApiHelper():
         return self.plex_api_call('sections')
 
     def get_all_shows(self, section_id):
-        return self.plex_api_call('sections/' + str(section_id) + '/all')
+        return [Show(show) for show in self.plex_api_call('sections/' + str(section_id) + '/all')]
 
     def get_seasons(self, show_id):
-        seasons = self.plex_api_call('metadata/' + str(show_id) + '/children')
-        return [season for season in seasons if season.get('index') is not None]
+        return [Season(season) for season in self.plex_api_call('metadata/' + str(show_id) + '/children') if
+                season.get('index') is not None]
 
     def get_season_episodes(self, season_id):
-        return self.plex_api_call('metadata/' + str(season_id) + '/children', 'Video')
+        return [Episode(episode) for episode in self.plex_api_call('metadata/' + str(season_id) + '/children', 'Video')]
 
     def get_show_episodes(self, show_id):
-        return self.plex_api_call('metadata/' + str(show_id) + '/allLeaves', 'Video')
+        return [Episode(episode) for episode in self.plex_api_call('metadata/' + str(show_id) + '/allLeaves', 'Video')]
 
     def get_video_files(self, episode_id):
-        return self.plex_api_call('metadata/' + str(episode_id), 'Part')
+        return [Video(video) for video in self.plex_api_call('metadata/' + str(episode_id), 'Part')]
 
     def plex_api_call(self, uri, m_type='Directory'):
         try:
@@ -68,7 +68,7 @@ class PlexHelper():
         eps = helper.get_show_episodes(id)
         ret = []
         for episode in eps:
-            ret.append(to_episode_string(episode.get('parentIndex'), episode.get('index')))
+            ret.append(to_episode_string(episode.seasonNum, episode.episodeNum))
 
         return ret
 
@@ -101,7 +101,7 @@ class PlexHelper():
 
 
 class Show():
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs):
         self.id = kwargs.get('ratingKey')
         self.title = kwargs.get('title')
         self.numEpisodes = int(kwargs.get('leafCount'))
@@ -110,7 +110,7 @@ class Show():
 
 
 class Season():
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs):
         self.id = kwargs.get('ratingKey')
         self.numEpisodes = int(kwargs.get('leafCount'))
         self.seasonNum = int(kwargs.get('index'))
@@ -118,13 +118,14 @@ class Season():
 
 
 class Episode():
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs):
         self.id = kwargs.get('ratingKey')
         self.episodeNum = kwargs.get('index')
+        self.seasonNum = kwargs.get('parentIndex')
 
 
 class Video():
-    def __init__(self, **kwargs):
+    def __init__(self, kwargs):
         self.file = kwargs.get('file')
 
 

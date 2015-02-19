@@ -2,7 +2,7 @@ __author__ = 'Dirrk'
 
 import unittest
 
-from app.plex.plex import ApiHelper, PlexHelper
+from app.plex.plex import ApiHelper, PlexHelper, Show
 
 
 class TestApiHelper(unittest.TestCase):
@@ -54,6 +54,18 @@ class TestApiHelper(unittest.TestCase):
         print "SE Array:", data
         self.assertEqual(len(data), 62, "There should be 62 episodes of Breaking Bad")
 
+    def test_create_show(self):
+        val = {'rating': '8.4', 'art': '/library/metadata/4373/art/1391171227', 'addedAt': '1386945889', 'year': '2011',
+               'ratingKey': '4373', 'viewedLeafCount': '0', 'studio': 'FX', 'key': '/library/metadata/4373/children',
+               'updatedAt': '1391171227', 'duration': '3000000',
+               'summary': 'American Horror Story is a horror-drama television franchise created and produced by Ryan Murphy and Brad Falchuk. Described as an anthology series, each season is conceived as a self-contained miniseries, following a disparate set of characters and settings, and a storyline with its own "beginning, middle and end".',
+               'banner': '/library/metadata/4373/banner/1391171227', 'index': '1',
+               'thumb': '/library/metadata/4373/thumb/1391171227', 'title': 'American Horror Story', 'leafCount': '38',
+               'contentRating': 'TV-GA', 'originallyAvailableAt': '2011-10-05',
+               'theme': '/library/metadata/4373/theme/1391171227', 'type': 'show', 'childCount': '3'}
+        a = Show(val)
+        self.assertEqual(a.id, '4373')
+
     def test_regex_1(self):
         a = PlexHelper()
         print a.generate_regex('Breaking Bad (2009)')
@@ -67,5 +79,5 @@ class TestApiHelper(unittest.TestCase):
 
         shows = b.get_all_shows(2)
         for show in shows:
-            tmp_r = a.generate_regex(show.get('title'))
-            self.assertRegexpMatches(show.get('title'), tmp_r)
+            tmp_r = a.generate_regex(show.title)
+            self.assertRegexpMatches(show.title, tmp_r)
