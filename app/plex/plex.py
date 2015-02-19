@@ -26,12 +26,14 @@ class ApiHelper():
         seasons = self.plex_api_call('metadata/' + str(show_id) + '/children')
         return [season for season in seasons if season.get('index') is not None]
 
-
     def get_season_episodes(self, season_id):
         return self.plex_api_call('metadata/' + str(season_id) + '/children', 'Video')
 
     def get_show_episodes(self, show_id):
         return self.plex_api_call('metadata/' + str(show_id) + '/allLeaves', 'Video')
+
+    def get_video_files(self, episode_id):
+        return self.plex_api_call('metadata/' + str(episode_id), 'Part')
 
     def plex_api_call(self, uri, m_type='Directory'):
         try:
@@ -119,6 +121,11 @@ class Episode():
     def __init__(self, **kwargs):
         self.id = kwargs.get('ratingKey')
         self.episodeNum = kwargs.get('index')
+
+
+class Video():
+    def __init__(self, **kwargs):
+        self.file = kwargs.get('file')
 
 
 def to_episode_string(season, episode):

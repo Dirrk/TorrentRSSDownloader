@@ -144,6 +144,7 @@ class TestSubscriptionObject(unittest.TestCase):
         self.sub.set_option("episode_match", True)
         self.sub.set_option("reg_allow", "Mountain.Men*")
         matches = self.sub.match(self.items)
+        print "Matches object:", matches
         self.assertEqual(len(matches), 1)
         self.assertIsInstance(matches[0], Item)
         self.assertEqual(matches[0].episode, "S01E05")
@@ -153,6 +154,7 @@ class TestSubscriptionObject(unittest.TestCase):
         matches2 = self.sub.match(self.items)
         self.assertEqual(len(matches2), 0)
         self.assertEqual(len(self.sub.episodes), 3)
+        print "Matches object:", matches2
         for eps in self.sub.episodes:
-            print eps
+            print "Episodes:", eps
 

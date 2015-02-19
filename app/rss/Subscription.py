@@ -107,6 +107,7 @@ class Subscription:
                 print "Round #2 (After Size/Quality): ", item.title
 
                 # Filter episodes
+                # TODO Am I testing multiple episode match?
                 if self.__options__.get('episode_match') is True and len(match.episode) > 2:
                     try:
                         self.episodes.index(match.episode)
