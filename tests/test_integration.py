@@ -42,6 +42,7 @@ class TestIntegrationOfApp(unittest.TestCase):
             for ep in eps:
                 a_show.add_episode(ep)
             a_show.set_option("reg_allow", plex.PlexHelper.generate_regex(show))
+            a_show.set_option("episode_match", True)
             a_show.enabled = 1
             a_show.plex_id = show.id
 
@@ -63,9 +64,10 @@ class TestIntegrationOfApp(unittest.TestCase):
                     a_torrent = Torrent(match.link)
                     a_torrent.subscriptionId = sub.id
                     a_torrent.final_location = plex.PlexHelper.find_location(sub.plex_id, match.episode)
-                    a_torrent.download()
-                    self.db.add_torrent(a_torrent)
-                    sub.add_episode(match.episode)
+                    if a_torrent.download() is True:
+                        self.db.add_torrent(a_torrent)
+                    else:
+                        print "Torrent failed to download"
 
                 self.db.update_subscription(sub)
 

@@ -47,7 +47,7 @@ class Subscription:
         options['maxSize'] = inopts.get('maxSize') if inopts.get(
             'maxSize') is not None else 1000000000  # Max of one petabyte ;)
         options['quality'] = inopts.get('quality') if inopts.get('quality') is not None else -1
-        options['episode_match'] = inopts.get('episode_match') if inopts.get('episode_match') is not None else False
+        options['episode_match'] = inopts.get('episode_match') if inopts.get('episode_match') is not None else True
         options['onlyOnce'] = inopts.get('onlyOnce') if inopts.get('onlyOnce') is not None else False
         options['preferred_release'] = inopts.get('preferred_release') if inopts.get(
             'preferred_release') is not None else ""
@@ -106,10 +106,10 @@ class Subscription:
                 print "Round #2 (After Size/Quality): ", match.title
 
                 # Filter episodes
-                # TODO Am I testing multiple episode match?
                 if self.__options__.get('episode_match') is True and len(match.episode) > 2:
                     try:
                         self.episodes.index(match.episode)
+                        print "Match blocked, because episode already exists"
                     except ValueError:
                         if matches2.get(match.episode) is None:
                             matches2[match.episode] = [match]

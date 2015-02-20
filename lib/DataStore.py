@@ -7,6 +7,7 @@ import json
 import app.settings as settings
 from app.rss.Feed import Feed
 from app.rss.Subscription import Subscription
+from app.torrent.Torrent import Torrent
 import os.path as path
 
 
@@ -64,9 +65,21 @@ class DataStore():
                     id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
                     name TEXT NOT NULL,
                     feedid INTEGER NOT NULL,
-                    options TEXT NOT NULL DEFAULT '{"reg_allow":"","onlyOnce":false,"episode_match":false,"waitTime":0,"preferred_release":"","maxSize":1000000000,"lastMatched":0,"minSize":0,"reg_exclude":"555DO-NOT-MATCH-THIS-REGEX-ESCAPE555","quality":-1}',
+                    options TEXT NOT NULL DEFAULT '{"reg_allow":"","onlyOnce":false,"episode_match":true,"waitTime":0,"preferred_release":"","maxSize":1000000000,"lastMatched":0,"minSize":0,"reg_exclude":"555DO-NOT-MATCH-THIS-REGEX-ESCAPE555","quality":-1}',
                     enabled INTEGER DEFAULT '0',
                     plex_id INTEGER DEFAULT '0'
+                );
+                '''
+            )
+            c.execute(
+                '''
+                CREATE TABLE `Torrents` (
+                    link TEXT NOT NULL,
+                    status INTEGER NOT NULL DEFAULT '0',
+                    subscriptionid	INTEGER NOT NULL,
+                    folder TEXT NOT NULL PRIMARY KEY,
+                    file TEXT,
+                    final_location TEXT
                 );
                 '''
             )
@@ -203,8 +216,30 @@ class DataStore():
         self.subscriptions['Subscription-' + str(sub.id)] = sub
         return sub.id
 
-    def add_torrent(self, sub):
-        pass
+    def add_torrent(self, tor):
+        conn = sqlite3.connect(self.__db_file__)
+        c = conn.cursor()
+        c.execute(
+            '''
+              INSERT INTO Torrents(link,status,subscriptionid,file,folder,final_location) VALUES (?,?,?,?,?,?)
+            ''', (tor.link, tor.status, tor.subscriptionId, tor.file, tor.folder, tor.final_location)
+        )
+        conn.commit()
+        conn.close()
+        self.torrents[tor.folder] = tor
+        return tor.folder
+
+    def update_torrent(self, tor):
+        conn = sqlite3.connect(self.__db_file__)
+        c = conn.cursor()
+        c.execute(
+            '''
+              UPDATE Torrents SET link=?, status=?, subscriptionid=?,file=?, final_location=? WHERE folder=?
+            ''', (tor.link, tor.status, tor.subscriptionId, tor.file, tor.final_location, tor.folder)
+        )
+        conn.commit()
+        conn.close()
+        return tor.folder
 
 
 def get_modified(conn):
@@ -294,7 +329,17 @@ def get_episodes(conn, id):
 
     return episodes
 
-
 def get_torrents(conn):
-    # TODO Complete torrent setup
-    return {}
+    d = conn.cursor()
+    d.execute(
+        '''
+            SELECT link, status, subscriptionid, folder, file, final_location FROM Torrents WHERE status < 4
+        '''
+    )
+    torrents = {}
+    for tor in d.fetchall():
+        a_torrent = Torrent(tor[0], int(tor[1]), tor[4], tor[3], tor[2])
+        a_torrent.final_location = tor[5]
+        torrents[a_torrent.folder] = a_torrent
+
+    return torrents
