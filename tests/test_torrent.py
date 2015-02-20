@@ -11,6 +11,7 @@ DELETE_TEST_FILES = True
 
 class TestBEncode(unittest.TestCase):
     def setUp(self):
+        self.longMessage = True
         self.files = []
         for (dirpath, dirnames, filenames) in os.walk("F:\\test-area\\bencode\\"):
             for file in filenames:
@@ -39,6 +40,7 @@ class TestBEncode(unittest.TestCase):
 
 class TestTorrent(unittest.TestCase):
     def setUp(self):
+        self.longMessage = True
         self.a = Torrent(
             "https://iptorrents.com/download.php/1323172/Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD.torrent?torrent_pass=TOKEN")
 

@@ -8,6 +8,7 @@ from app.plex.plex import ApiHelper, PlexHelper, Show
 class TestApiHelper(unittest.TestCase):
     def setUp(self):
         self.host = '192.168.137.1:32400'
+        self.longMessage = True
 
     def test_PlexObject(self):
         a = ApiHelper(self.host)
@@ -54,6 +55,12 @@ class TestApiHelper(unittest.TestCase):
         print "SE Array:", data
         self.assertEqual(len(data), 62, "There should be 62 episodes of Breaking Bad")
 
+    def test_create_video(self):
+        a = ApiHelper(self.host)
+        video_files = a.get_video_files(765)
+        self.assertEqual(len(video_files), 1, "S05E01 Should have 1 video")
+        self.assertRegexpMatches(video_files[0].file, '.*S05E01.*')
+
     def test_create_show(self):
         val = {'rating': '8.4', 'art': '/library/metadata/4373/art/1391171227', 'addedAt': '1386945889', 'year': '2011',
                'ratingKey': '4373', 'viewedLeafCount': '0', 'studio': 'FX', 'key': '/library/metadata/4373/children',
@@ -81,3 +88,15 @@ class TestApiHelper(unittest.TestCase):
         for show in shows:
             tmp_r = a.generate_regex(show.title)
             self.assertRegexpMatches(show.title, tmp_r)
+
+    def test_dir_finder(self):
+        a = PlexHelper(self.host)
+        loc = a.find_location(713, 'S05E17')
+        print "Location:", loc
+        self.assertEqual("Y:\\TV\\Breaking Bad\\Season 5", loc)
+
+    def test_dir_finder_new_dir(self):
+        a = PlexHelper(self.host)
+        loc = a.find_location(713, 'S06E01')
+        print "Location:", loc
+        self.assertEqual("Y:\\TV\\Breaking Bad\\Season 6", loc)

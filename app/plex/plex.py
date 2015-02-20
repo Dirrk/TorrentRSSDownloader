@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 import requests
 import app.settings as settings
 import re
+import os.path as path
 
 
 class ApiHelper():
@@ -39,7 +40,7 @@ class ApiHelper():
         try:
             r = requests.get('http://' + self.__host__ + '/library/' + str(uri))
             rss = ET.fromstring(r.content)
-            directories = rss.findall(m_type)
+            directories = rss.iter(m_type)
             ret = []
             for dir in directories:
                 ret.append(dir.attrib)
@@ -99,6 +100,44 @@ class PlexHelper():
 
         return ret
 
+    def find_location(self, plex_id, episode_str):
+
+        se = season_str_to_num(episode_str)
+
+        if se is None:
+            return None
+
+        api = ApiHelper()
+
+        seasons = api.get_seasons(plex_id)
+        if seasons is None or len(seasons) == 0:
+            return None
+
+        found_season = None
+        new_season = False
+
+        for season in seasons:
+            if season.seasonNum == se.get('season'):
+                found_season = season
+
+        if found_season is None:
+            new_season = True
+            found_season = seasons[-1]
+
+        found_season.episodes = api.get_season_episodes(found_season.id)
+        videos = api.get_video_files(found_season.episodes[0].id)
+        if videos is None or len(videos) == 0:
+            return None
+
+        ret_value = path.dirname(videos[0].file)
+
+        # new season needs a new directory
+        if new_season is True:
+            parent_path, season_path = path.split(ret_value)
+            ret_value = path.join(parent_path, 'Season ' + str(se.get('season')))
+
+        return ret_value
+
 
 class Show():
     def __init__(self, kwargs):
@@ -127,6 +166,7 @@ class Episode():
 class Video():
     def __init__(self, kwargs):
         self.file = kwargs.get('file')
+        print "Video Object:", kwargs
 
 
 def to_episode_string(season, episode):
@@ -146,3 +186,15 @@ def to_episode_string(season, episode):
         ret = ret + "0" + str(e)
 
     return ret
+
+
+def season_str_to_num(season_str):
+    values = re.split('[SsEe]', season_str)
+
+    if not (values is not None and len(values) > 2):
+        return None  # This not expected
+
+    return {
+        "season": int(values[1]),
+        "episode": int(values[2])
+    }

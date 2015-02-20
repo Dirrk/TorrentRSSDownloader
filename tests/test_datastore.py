@@ -14,6 +14,7 @@ KEEP_TEST_FILE = False
 
 class TestDataStoreObject(unittest.TestCase):
     def setUp(self):
+        self.longMessage = True
         self.db = DataStore(db_file)
         self.assertEqual(self.db.modified, 0)
 

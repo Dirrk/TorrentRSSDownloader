@@ -17,6 +17,7 @@ import requests
 
 class TestRSSSite(unittest.TestCase):
     def test_rssSite(self):
+        self.longMessage = True
         r = requests.get(
             "https://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=TOKEN")
         self.assertRegexpMatches(r.content, 'rss', "iptorrents is not responding correctly")
@@ -24,6 +25,7 @@ class TestRSSSite(unittest.TestCase):
 
 class TestItemObject(unittest.TestCase):
     def setUp(self):
+        self.longMessage = True
         self.ia = Item(
             '<item><title>The Late Late Show 2014 01 30 Martellus Bennett 720p HDTV x264-CROOKS</title><link>https://iptorrents.com/download.php/1310285/The.Late.Late.Show.2014.01.30.Martellus.Bennett.720p.HDTV.x264-CROOKS.torrent?torrent_pass=TOKEN</link><pubDate>Sat, 31 Jan 2015 19:19:28 +0000</pubDate><description>1.12 GB; TV/x264</description></item>')
         self.ib = Item(
@@ -65,6 +67,7 @@ class TestItemObject(unittest.TestCase):
 
 class TestFeedObject(unittest.TestCase):
     def setUp(self):
+        self.longMessage = True
         self.myFeed = Feed(1,
                            'https://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=TOKEN',
                            "My Name", 3)
@@ -90,6 +93,7 @@ class TestFeedObject(unittest.TestCase):
 
 class TestSubscriptionObject(unittest.TestCase):
     def setUp(self):
+        self.longMessage = True
         self.items = []
         self.items.append(Item(
             '<item><title>The Late Late Show 2014 01 30 Martellus Bennett 720p HDTV x264-CROOKS</title><link>https://iptorrents.com/download.php/1310285/The.Late.Late.Show.2014.01.30.Martellus.Bennett.720p.HDTV.x264-CROOKS.torrent?torrent_pass=TOKEN</link><pubDate>Sat, 31 Jan 2015 19:19:28 +0000</pubDate><description>1.12 GB; TV/x264</description></item>'))
