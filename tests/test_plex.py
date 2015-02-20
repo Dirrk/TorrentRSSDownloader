@@ -100,3 +100,11 @@ class TestApiHelper(unittest.TestCase):
         loc = a.find_location(713, 'S06E01')
         print "Location:", loc
         self.assertEqual("Y:\\TV\\Breaking Bad\\Season 6", loc)
+
+    def test_inflate(self):
+        a = ApiHelper(self.host).get_show_by_id(713)
+        self.assertIsInstance(a, Show)
+        a = PlexHelper.recursive_inflate(a)
+        self.assertEqual(a.numSeasons, len(a.seasons))
+        self.assertEqual(a.seasons[0].numEpisodes, 7)
+        self.assertEqual(a.seasons[-1].numEpisodes, 16)

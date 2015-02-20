@@ -20,6 +20,13 @@ class ApiHelper():
     def get_sections(self):
         return self.plex_api_call('sections')
 
+    def get_show_by_id(self, show_id):
+        shows = self.plex_api_call('metadata/' + str(show_id))
+        if shows is not None and len(shows) >= 1:
+            return Show(shows[0])
+        else:
+            return None
+
     def get_all_shows(self, section_id):
         return [Show(show) for show in self.plex_api_call('sections/' + str(section_id) + '/all')]
 
@@ -56,7 +63,8 @@ class PlexHelper():
     def __init__(self, plex_host=None):
         self.host = plex_host
 
-    def get_se_array(self, show=None):
+    @staticmethod
+    def get_se_array(show=None):
         if show is None:
             return []
         id = None
@@ -65,15 +73,15 @@ class PlexHelper():
         else:
             id = str(show)
 
-        helper = ApiHelper(self.host)
-        eps = helper.get_show_episodes(id)
+        eps = ApiHelper().get_show_episodes(id)
         ret = []
         for episode in eps:
             ret.append(to_episode_string(episode.seasonNum, episode.episodeNum))
 
         return ret
 
-    def generate_regex(self, show=None):
+    @staticmethod
+    def generate_regex(show=None):
         if show is None:
             raise ValueError("Show needs to be defined")
         title = None
@@ -100,7 +108,8 @@ class PlexHelper():
 
         return ret
 
-    def find_location(self, plex_id, episode_str):
+    @staticmethod
+    def find_location(plex_id, episode_str):
 
         se = season_str_to_num(episode_str)
 
@@ -138,6 +147,24 @@ class PlexHelper():
 
         return ret_value
 
+    @staticmethod
+    def recursive_inflate(plex_object):
+
+        if isinstance(plex_object, Show):
+            for x in range(len(plex_object.get_seasons())):
+                PlexHelper.recursive_inflate(plex_object.seasons[x])
+            return plex_object
+        elif isinstance(plex_object, Season):
+            for x in range(len(plex_object.get_episodes())):
+                PlexHelper.recursive_inflate(plex_object.episodes[x])
+            return plex_object
+        elif isinstance(plex_object, Episode):
+            for x in range(len(plex_object.get_videos())):
+                PlexHelper.recursive_inflate(plex_object.videos[x])
+            return plex_object
+        else:
+            return plex_object
+
 
 class Show():
     def __init__(self, kwargs):
@@ -147,6 +174,10 @@ class Show():
         self.numSeasons = int(kwargs.get('childCount'))
         self.seasons = []
 
+    def get_seasons(self):
+        self.seasons = ApiHelper().get_seasons(self.id)
+        return self.seasons
+
 
 class Season():
     def __init__(self, kwargs):
@@ -155,18 +186,27 @@ class Season():
         self.seasonNum = int(kwargs.get('index'))
         self.episodes = []
 
+    def get_episodes(self):
+        self.episodes = ApiHelper().get_season_episodes(self.id)
+        for eps in self.episodes:
+            eps.seasonNum = self.seasonNum
+        return self.episodes
+
 
 class Episode():
     def __init__(self, kwargs):
         self.id = kwargs.get('ratingKey')
         self.episodeNum = kwargs.get('index')
         self.seasonNum = kwargs.get('parentIndex')
+        self.videos = []
 
+    def get_videos(self):
+        self.videos = ApiHelper().get_video_files(self.id)
+        return self.videos
 
 class Video():
     def __init__(self, kwargs):
         self.file = kwargs.get('file')
-        print "Video Object:", kwargs
 
 
 def to_episode_string(season, episode):
