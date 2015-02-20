@@ -204,6 +204,7 @@ class Episode():
         self.videos = ApiHelper().get_video_files(self.id)
         return self.videos
 
+
 class Video():
     def __init__(self, kwargs):
         self.file = kwargs.get('file')

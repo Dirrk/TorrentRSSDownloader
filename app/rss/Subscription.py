@@ -35,6 +35,7 @@ class Subscription:
         self.feedId = feed_id
         self.episodes = []
         self.plex_id = 0
+        self.enabled = 1
         options = {}
 
         options['reg_allow'] = inopts.get('reg_allow') if inopts.get('reg_allow') is not None else ""
@@ -67,7 +68,6 @@ class Subscription:
 
     def match(self, items):
 
-        print "Matching"
         if self.__options__.get('waitTime') != 0 and (datetime.datetime.now() - time.localtime(
                 self.__options__.get('lastMatched'))).seconds < self.__options__.get('waitTime') * 3600:
             print "WaitTime: ", self.__options__.get("waitTime")
@@ -91,7 +91,6 @@ class Subscription:
             "__NO__EPISODE__": []
         }
 
-
         # Second round of matching
         for match in matches:
             # Size / Quality
@@ -104,7 +103,7 @@ class Subscription:
                 if p is not None:
                     match.quality += len(p.groups()) * 10
 
-                print "Round #2 (After Size/Quality): ", item.title
+                print "Round #2 (After Size/Quality): ", match.title
 
                 # Filter episodes
                 # TODO Am I testing multiple episode match?
@@ -120,10 +119,14 @@ class Subscription:
                     matches2["__NO__EPISODE__"].append(match)
 
         return_matches = []
+
         for key in matches2.keys():
             if len(matches2[key]) > 0:
                 # Sort for best quality
-                matches2[key].sort(lambda a, b: a.quality - b.quality)
+                matches2[key].sort(lambda a, b: b.quality - a.quality)
+                print "Title / Quality"
+                for val in matches2[key]:
+                    print val.title, val.quality
 
                 # Add to return stack
                 return_matches.append(matches2[key][0])
@@ -135,6 +138,6 @@ class Subscription:
                     self.episodes.append(key)
 
         if len(return_matches) > 0 and self.__options__.get('onlyOnce') is True:
-            self.__options__["enabled"] = False
+            self.enabled = 0
 
         return return_matches

@@ -136,8 +136,8 @@ class DataStore():
 
         c.execute(
             '''
-              UPDATE Subscriptions SET options=? WHERE id=?
-            ''', (new_opts, sub.id)
+              UPDATE Subscriptions SET feedid=?, enabled=?, plex_id=?, options=? WHERE id=?
+            ''', (sub.feedId, sub.enabled, sub.plex_id, new_opts, sub.id)
         )
         c.execute(
             '''
@@ -170,6 +170,41 @@ class DataStore():
         )
         conn.commit()
         conn.close()
+
+    # Add Feed
+    def add_feed(self, feed):
+        conn = sqlite3.connect(self.__db_file__)
+        c = conn.cursor()
+
+        c.execute(
+            '''
+              INSERT INTO Feeds(url, name, frequency, last_pub) VALUES (?, ?, ?, ?);
+            ''', (feed.url, feed.name, feed.frequency, feed.last_pub)
+        )
+        ret_id = c.lastrowid
+        conn.commit()
+        conn.close()
+        feed.id = ret_id
+        self.feeds['Feed-' + str(ret_id)] = feed
+        return ret_id
+
+    def add_subscription(self, sub):
+        conn = sqlite3.connect(self.__db_file__)
+        c = conn.cursor()
+        c.execute(
+            '''
+              INSERT INTO Subscriptions(name, feedid) VALUES (?, ?);
+            ''', (sub.name, sub.feedId)
+        )
+        sub.id = c.lastrowid
+        conn.commit()
+        conn.close()
+        self.update_subscription(sub)
+        self.subscriptions['Subscription-' + str(sub.id)] = sub
+        return sub.id
+
+    def add_torrent(self, sub):
+        pass
 
 
 def get_modified(conn):

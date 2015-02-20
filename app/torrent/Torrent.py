@@ -17,7 +17,7 @@ class Torrent:
         self.status = status  # 0 - Nothing, 1 - Downloaded torrent file, 2 - Downloading, 3 - Download complete, 4 - organized 5 - failed
         self.file = file
         self.folder = folder  # Folder that files will be contained in
-        self.subscriptionId = subscription_id  # Plex Subscription ID
+        self.subscriptionId = subscription_id  # Local Subscription Id
         self.final_location = None  # Location we are going to move the file to
 
         if self.file is None:

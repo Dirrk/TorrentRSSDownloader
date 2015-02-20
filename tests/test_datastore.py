@@ -20,6 +20,10 @@ class TestDataStoreObject(unittest.TestCase):
 
         self.db_test = DataStore(db_test_file)
         self.db_test.create()
+        self.db_test.add_feed(Feed(0, "http://google.com", "Test_Google", 300))
+        a = Subscription(0, "Test-Subscription", 1)
+        a.add_episode("S01E01")
+        self.db_test.add_subscription(a)
 
     def test_load(self):
         self.db.load()
@@ -35,23 +39,6 @@ class TestDataStoreObject(unittest.TestCase):
             self.assertGreater(int(a[1]), 0)
             print "Found: ", a
 
-        conn.execute(
-            '''
-              INSERT INTO Feeds(url, name, frequency, last_pub) VALUES ("http://google.com", "Test_Google", 300, 0);
-            '''
-        )
-        conn.execute(
-            '''
-              INSERT INTO Subscriptions(name, feedid, enabled) VALUES ('Test-Subscription', 1, 1);
-            '''
-        )
-        conn.execute(
-            '''
-              INSERT INTO SubscriptionEpisodes(episode, subscriptionid) VALUES ('S01E01', 1)
-            '''
-        )
-
-        conn.commit()
         conn.close()
 
     def test_reload(self):
@@ -93,7 +80,9 @@ class TestDataStoreObject(unittest.TestCase):
 
         sub1 = self.db_test.subscriptions['Subscription-1']
         self.assertEqual(len(sub1.episodes), 2)
-        self.assertEqual(len(self.db_test.subscriptions.keys()), 1)
+
+        print "Keys:", self.db_test.subscriptions
+        self.assertEqual(len(self.db_test.subscriptions.keys()), 4)
 
     def update_feed(self):
 
