@@ -71,6 +71,8 @@ class TestIntegrationOfApp(unittest.TestCase):
 
                 self.db.update_subscription(sub)
 
+        # TODO Bug will download a tv pack that matches which is not the intended case
+
         self.db.update_feed(my_feed)
         self.assertEqual(True, True)
 

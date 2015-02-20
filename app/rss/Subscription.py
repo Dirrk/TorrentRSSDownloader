@@ -106,7 +106,7 @@ class Subscription:
                 print "Round #2 (After Size/Quality): ", match.title
 
                 # Filter episodes
-                if self.__options__.get('episode_match') is True and len(match.episode) > 2:
+                if self.__options__.get('episode_match') is True and len(match.episode) > 3:
                     try:
                         self.episodes.index(match.episode)
                         print "Match blocked, because episode already exists"
@@ -115,6 +115,8 @@ class Subscription:
                             matches2[match.episode] = [match]
                         else:
                             matches2[match.episode].append(match)
+                elif self.__options__.get('episode_match') is True:
+                    print "Found season download but this code is not implimented so I am skipping it"
                 else:
                     matches2["__NO__EPISODE__"].append(match)
 
