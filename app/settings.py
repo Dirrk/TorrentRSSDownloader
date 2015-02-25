@@ -13,7 +13,7 @@ DOWNLOAD_DIRECTORY = "F:\\test-area\\dev\\downloading"
 COMPLETE_DIRECTORY = "F:\\test-area\\dev\\complete"
 SEVEN_ZIP = "C:\\7zip\\7z.exe"
 PLEX_HOST = '192.168.137.1:32400'
-FEED = ("http://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=TOKEN",)
+FEED = ("http://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=" + os.environ.get('TOKEN'),)
 PLEX_TV_SECTION = 2
 
 

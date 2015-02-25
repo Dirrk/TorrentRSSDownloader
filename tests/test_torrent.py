@@ -34,10 +34,6 @@ class TestBEncode(unittest.TestCase):
                 self.assertGreater(len(info.get('files')), 0)
 
 
-                # data = '8:announce72:http://sync.empirehost.me:9153/TOKEN/announce4:infod5:filesld6:lengthi1217626673e4:pathl41:Big Hero 6 2014 DVDSCR x264 AC3 TiTAN.mkveed6:lengthi3086e4:pathl41:Big Hero 6 2014 DVDSCR x264 AC3 TiTAN.nfoeee4:name37:Big Hero 6 2014 DVDSCR x264 AC3 TiTAN12:piece lengthi2097152'
-                # values = bencodeToDict(data)
-
-
 class TestTorrent(unittest.TestCase):
     def setUp(self):
         self.longMessage = True

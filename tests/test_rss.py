@@ -4,6 +4,8 @@ import unittest
 from datetime import datetime as date
 import time
 
+import app.settings as settings
+
 from app.rss.Feed import Feed
 from app.rss.Item import Item
 from app.rss.Subscription import Subscription
@@ -19,7 +21,7 @@ class TestRSSSite(unittest.TestCase):
     def test_rssSite(self):
         self.longMessage = True
         r = requests.get(
-            "https://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=TOKEN")
+            settings.FEED[0])
         self.assertRegexpMatches(r.content, 'rss', "iptorrents is not responding correctly")
 
 
