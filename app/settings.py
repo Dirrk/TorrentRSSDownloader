@@ -19,6 +19,11 @@ PLEX_TV_SECTION = 2
 
 if __ENV__ == 'Production':
     __DEBUG__ = False
+    DATA_FILE = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\torrents.db"
+    TORRENT_DIRECTORY = "F:\\Incoming\\monitor"
+    DOWNLOAD_DIRECTORY = "F:\\Incoming"
+    COMPLETE_DIRECTORY = "Z:\\Completed"
+
     print "Production"
 
 elif __ENV__ == 'Stage':

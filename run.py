@@ -5,7 +5,7 @@ import sys
 import logging
 
 import app.settings as settings
-import app.TorrentDownloadService as TorrentDownloadService
+from app.TorrentDownloadService import TorrentService
 
 
 
@@ -35,7 +35,7 @@ def main(args):
     root.info("Starting application with config %s", config_file)
 
     # Start application
-    TorrentDownloadService().start()
+    TorrentService().start()
 
 
 if __name__ == "__main__":
