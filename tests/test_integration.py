@@ -74,9 +74,9 @@ class TestIntegrationOfApp(unittest.TestCase):
         self.db.update_feed(my_feed)
         self.assertEqual(True, True)
 
-    def test_nothing(self):
-        self.assertEqual(True, True)
-
+    def test_new_plex_feature(self):
+        new_subs = plex.PlexHelper.find_new_subs(self.db.get_all_subscriptions())
+        self.assertEqual(len(new_subs), 0)
 
     @classmethod
     def tearDownClass(cls):

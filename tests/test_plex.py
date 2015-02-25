@@ -76,9 +76,9 @@ class TestApiHelper(unittest.TestCase):
     def test_regex_1(self):
         a = PlexHelper()
         print a.generate_regex('Breaking Bad (2009)')
-        self.assertEqual(a.generate_regex('Breaking Bad (2009)'), 'Breaking.Bad.*')
-        self.assertEqual(a.generate_regex('Breaking Bad'), 'Breaking.Bad.*')
-        self.assertEqual(a.generate_regex('Breaking Bad.'), 'Breaking.Bad.*')
+        self.assertEqual(a.generate_regex('Breaking Bad (2009)'), '^Breaking.Bad.*')
+        self.assertEqual(a.generate_regex('Breaking Bad'), '^Breaking.Bad.*')
+        self.assertEqual(a.generate_regex('Breaking Bad.'), '^Breaking.Bad.*')
 
     def test_regex_2(self):
         b = ApiHelper(self.host)

@@ -67,12 +67,12 @@ class Torrent:
             self.status = TORRENT_STATES["DOWNLOADED"]
 
         if self.status == TORRENT_STATES["DOWNLOADED"]:
-            self.organize()
+            self._organize()
 
         print "Status: ", changed
         return (changed - self.status) == 0
 
-    def organize(self):
+    def _organize(self):
 
         self.status = TORRENT_STATES["COMPLETE"]
 
@@ -135,6 +135,10 @@ class Torrent:
 
         if extract_file(file, self.final_location) is True:
             self.status = TORRENT_STATES["FATAL"]
+
+    def to_string(self):
+        my_status = [key for key in TORRENT_STATES if TORRENT_STATES[key] == self.status][0]
+        return "Torrent:", self.folder, "in status:", my_status
 
 
 TORRENT_STATES = {

@@ -107,6 +107,7 @@ class PlexHelper():
         else:
             ret += '.*'
 
+        ret = "^{0}".format(ret)
         return ret
 
     @staticmethod
@@ -171,10 +172,15 @@ class PlexHelper():
 
         api = ApiHelper()
         shows = api.get_all_shows(settings.PLEX_TV_SECTION)
+        subs = [subs[sub] for sub in subs]
 
         subs_not_in_plex = [sub for sub in subs if sub.plex_id == 0]
         plex_ids_used = [sub.plex_id for sub in subs if sub.plex_id != 0]
-        shows_not_in_subs = [show for show in shows if show.id not in plex_ids_used]
+        shows_not_in_subs = [show for show in shows if int(show.id) not in plex_ids_used]
+
+        print "Subs_not_in_plex", subs_not_in_plex
+        print "Plex_ids_used", plex_ids_used
+        print "Shows_not_in_subs", [show.id for show in shows_not_in_subs]
 
         # Remaining are subscriptions that aren't in plex and the shows that haven't been made subscriptions
         # First lets try to pair any up that should be
@@ -187,11 +193,12 @@ class PlexHelper():
             found_show = -1
             for show in shows_not_in_subs:
                 if rex.search(show.title) is not None:
-                    sub.plex_id = show.id
+                    sub.plex_id = int(show.id)
                     ret_subs.append(sub)
-                    found_show = show.id
+                    found_show = int(show.id)
+                    print "Found show: ", show.title
             if found_show != -1:
-                shows_not_in_subs = [show for show in shows_not_in_subs if show.id == found_show]
+                shows_not_in_subs = [show for show in shows_not_in_subs if int(show.id) == found_show]
             else:
                 round_1_subs.append(sub)
 
@@ -204,7 +211,7 @@ class PlexHelper():
             a_show.set_option("reg_allow", PlexHelper.generate_regex(show))
             a_show.set_option("episode_match", True)
             a_show.enabled = 0
-            a_show.plex_id = show.id
+            a_show.plex_id = int(show.id)
             ret_subs.append(a_show)
 
         return ret_subs

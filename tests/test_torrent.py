@@ -67,7 +67,7 @@ class TestTorrent(unittest.TestCase):
 
         first.final_location = "F:\\test-area\\dev\\Plex_Area\\Drive B\\Show C\\Season 3"
 
-        self.assertFalse(first.organize())
+        self.assertFalse(first._organize())
         self.assertTrue(os.path.exists(
             "F:\\test-area\\dev\\Plex_Area\\Drive B\\Show C\\Season 3\\Archer.2009.S06E06.720p.HDTV.x264-KILLERS.mkv"))
 
@@ -81,7 +81,7 @@ class TestTorrent(unittest.TestCase):
 
         first.final_location = "F:\\test-area\\dev\\Plex_Area\\Drive B\\Show C\\Season 2"
 
-        self.assertFalse(first.organize())
+        self.assertFalse(first._organize())
         self.assertTrue(os.path.exists(
             "F:\\test-area\\dev\\Plex_Area\\Drive B\\Show C\\Season 2\\Laggies.2014.LIMITED.720p.BRRiP.X264.Ac3.CrEwSaDe.Sample.mkv"))
 
@@ -95,7 +95,7 @@ class TestTorrent(unittest.TestCase):
 
         first.final_location = "F:\\test-area\\dev\\Plex_Area\\Drive B\\Show C\\Season 1"
 
-        self.assertFalse(first.organize())
+        self.assertFalse(first._organize())
         self.assertTrue(os.path.exists(
             "F:\\test-area\\dev\\Plex_Area\\Drive B\\Show C\\Season 1\\Laggies.2014.LIMITED.720p.BRRiP.X264.Ac3.CrEwSaDe.mkv"))
 
