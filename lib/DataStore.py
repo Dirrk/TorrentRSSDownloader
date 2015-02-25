@@ -308,11 +308,9 @@ def get_subscriptions(conn, all_subs=False):
         opts = {}
         try:
             opts = json.loads(sub[4])
-            for key in opts.keys():
-                print key
+
         except Exception as e:
-            print "Exception"
-            print e.message
+            logging.exception(e.message)
             opts = {}
 
         new_sub = Subscription(int(sub[0]), sub[1], int(sub[2]), opts)
@@ -341,6 +339,7 @@ def get_episodes(conn, id):
         episodes.append(ep[0])
 
     return episodes
+
 
 def get_torrents(conn):
     d = conn.cursor()

@@ -1,6 +1,7 @@
 __author__ = 'Dirrk'
 
 import xml.etree.ElementTree as ET
+import logging
 
 import requests
 import app.settings as settings
@@ -55,8 +56,8 @@ class ApiHelper():
             return ret
 
         except Exception as e:
-            print e
-            print "Plex API Error"
+            logging.exception(e)
+            logging.error("Plex API Error")
             return []
 
 
@@ -177,10 +178,6 @@ class PlexHelper():
         plex_ids_used = [sub.plex_id for sub in subs if sub.plex_id != 0]
         shows_not_in_subs = [show for show in shows if int(show.id) not in plex_ids_used]
 
-        print "Subs_not_in_plex", subs_not_in_plex
-        print "Plex_ids_used", plex_ids_used
-        print "Shows_not_in_subs", [show.id for show in shows_not_in_subs]
-
         # Remaining are subscriptions that aren't in plex and the shows that haven't been made subscriptions
         # First lets try to pair any up that should be
         # Go through subs and attempt regex against shows_not_in_subs.title
@@ -195,7 +192,7 @@ class PlexHelper():
                     sub.plex_id = int(show.id)
                     ret_subs.append(sub)
                     found_show = int(show.id)
-                    print "Found show: ", show.title
+                    logging.debug("Found show: ", show.title)
             if found_show != -1:
                 shows_not_in_subs = [show for show in shows_not_in_subs if int(show.id) == found_show]
             else:
@@ -209,7 +206,7 @@ class PlexHelper():
                 a_show.add_episode(ep)
             a_show.set_option("reg_allow", PlexHelper.generate_regex(show))
             a_show.set_option("episode_match", True)
-            a_show.enabled = 0
+            a_show.enabled = 1
             a_show.plex_id = int(show.id)
             ret_subs.append(a_show)
 

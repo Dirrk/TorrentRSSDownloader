@@ -7,7 +7,7 @@ log = logging.getLogger()
 from lib.DataStore import DataStore
 import app.plex.plex as plex
 from app.torrent.Torrent import Torrent
-import thread
+import time
 
 
 class TorrentService:
@@ -51,7 +51,7 @@ class TorrentService:
                             matched = sub.match(items)
                             if matched is not None and len(matched) > 0:
                                 for match in matched:
-                                    print "Found matches:", match.title
+                                    logging.debug("Found matches:", match.title)
 
                                     a_torrent = Torrent(match.link)
                                     a_torrent.subscriptionId = sub.id
@@ -60,7 +60,7 @@ class TorrentService:
                                     if a_torrent.download() is True:
                                         self.db.add_torrent(a_torrent)
                                     else:
-                                        print "Torrent failed to download"
+                                        logging.error("Torrent failed to download")
 
                             self.db.update_subscription(sub)
                     self.db.update_feed(feed)
@@ -68,6 +68,6 @@ class TorrentService:
             for t_id in self.db.torrents:
                 torrent = self.db.torrents[t_id]
                 if torrent.check_status() is True:
-                    print torrent.to_string()
+                    logging.warn(torrent.to_string())
 
-            thread.sleep(15)
+            time.sleep(15)
