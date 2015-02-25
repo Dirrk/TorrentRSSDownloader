@@ -85,13 +85,12 @@ class PlexHelper():
     def generate_regex(show=None):
         if show is None:
             raise ValueError("Show needs to be defined")
-        title = None
-        if isinstance(show, Show):
-            title = str(show.title)
-        else:
-            title = str(show)
 
-        ret = title
+        ret = ""
+        if isinstance(show, Show):
+            ret = str(show.title)
+        else:
+            ret = str(show)
 
         # Match the year case
         match = re.search('[(][0-9A-Za-z]{2,4}[)]$', ret)
