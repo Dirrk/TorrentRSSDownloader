@@ -280,7 +280,7 @@ def get_feeds(conn):
             pass
 
         feeds['Feed-' + str(feed[0])] = new_feed
-        logging.info('Added Feed-' + str(feed[0]))
+        logging.debug('Added Feed-' + str(feed[0]))
 
     return feeds
 
@@ -318,7 +318,7 @@ def get_subscriptions(conn, all_subs=False):
         new_sub.plex_id = int(sub[3])
 
         subscriptions['Subscription-' + str(sub[0])] = new_sub
-        logging.info("Added Subscription-" + str(sub[0]))
+
         episodes = get_episodes(conn, new_sub.id)
 
         for episode in episodes:

@@ -1,6 +1,7 @@
 __author__ = 'Dirrk'
 from datetime import datetime as date
 import xml.etree.ElementTree as ET
+import logging
 
 import re
 
@@ -33,8 +34,8 @@ class Item:
             self.pubDate = date.strptime(xml_element.find('pubDate').text, "%a, %d %b %Y %H:%M:%S +0000")
             self.description = xml_element.find('description').text
             self.link = xml_element.find('link').text
-        except:
-            print "Invalid format"
+        except Exception as e:
+            logging.exception(e)
 
         self.size = parse_size(self.description)
         self.episodes = parse_episode(self.title)
@@ -68,10 +69,8 @@ def parse_episode(title):
         else:
             ret.append(season)
     else:
-        print "Did not match regex", title
+        logging.info("Did not match regex", title)
         return [""]
-
-    print "ReturnValue", ret
 
     return ret
 
