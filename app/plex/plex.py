@@ -6,6 +6,7 @@ import requests
 import app.settings as settings
 import re
 import os.path as path
+from app.rss.Subscription import Subscription
 
 
 class ApiHelper():
@@ -164,6 +165,49 @@ class PlexHelper():
             return plex_object
         else:
             return plex_object
+
+    @staticmethod
+    def find_new_subs(subs):
+
+        api = ApiHelper()
+        shows = api.get_all_shows(settings.PLEX_TV_SECTION)
+
+        subs_not_in_plex = [sub for sub in subs if sub.plex_id == 0]
+        plex_ids_used = [sub.plex_id for sub in subs if sub.plex_id != 0]
+        shows_not_in_subs = [show for show in shows if show.id not in plex_ids_used]
+
+        # Remaining are subscriptions that aren't in plex and the shows that haven't been made subscriptions
+        # First lets try to pair any up that should be
+        # Go through subs and attempt regex against shows_not_in_subs.title
+        # Any matches then assign the plex id to sub and add to return list
+        ret_subs = []
+        round_1_subs = []
+        for sub in subs_not_in_plex:
+            rex = re.compile(sub.get_option('reg_allow'), re.IGNORECASE)
+            found_show = -1
+            for show in shows_not_in_subs:
+                if rex.search(show.title) is not None:
+                    sub.plex_id = show.id
+                    ret_subs.append(sub)
+                    found_show = show.id
+            if found_show != -1:
+                shows_not_in_subs = [show for show in shows_not_in_subs if show.id == found_show]
+            else:
+                round_1_subs.append(sub)
+
+        # Passed matching round just add everything that is in plex but not in a subscription
+        for show in shows_not_in_subs:
+            a_show = Subscription(0, show.title, 0)
+            eps = PlexHelper.get_se_array(show)
+            for ep in eps:
+                a_show.add_episode(ep)
+            a_show.set_option("reg_allow", PlexHelper.generate_regex(show))
+            a_show.set_option("episode_match", True)
+            a_show.enabled = 0
+            a_show.plex_id = show.id
+            ret_subs.append(a_show)
+
+        return ret_subs
 
 
 class Show():

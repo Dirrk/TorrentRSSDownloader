@@ -62,7 +62,8 @@ class Torrent:
             self.status = TORRENT_STATES["DOWNLOADING"]
 
         elif self.status == TORRENT_STATES["DOWNLOADING"] and os.path.exists(
-                os.path.join(settings.COMPLETE_DIRECTORY, self.folder)):
+                os.path.join(settings.COMPLETE_DIRECTORY, self.folder)) and not os.path.exists(
+                os.path.join(settings.DOWNLOAD_DIRECTORY, self.folder)):
             self.status = TORRENT_STATES["DOWNLOADED"]
 
         if self.status == TORRENT_STATES["DOWNLOADED"]:

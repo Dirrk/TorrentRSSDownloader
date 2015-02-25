@@ -125,7 +125,7 @@ class TestSubscriptionObject(unittest.TestCase):
         """
         self.assertEqual(self.sub.__options__.get('reg_exclude'), "555DO-NOT-MATCH-THIS-REGEX-ESCAPE555")
         self.assertFalse(self.sub.__options__.get('enabled'))
-        self.assertFalse(self.sub.__options__.get('episode_match'))
+        self.assertTrue(self.sub.__options__.get('episode_match'))
         self.assertFalse(self.sub.__options__.get('onlyOnce'))
         self.assertEqual(self.sub.__options__.get('waitTime'), 0)
         self.assertEqual(self.sub.__options__.get('minSize'), 0)

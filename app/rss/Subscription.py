@@ -63,6 +63,9 @@ class Subscription:
         finally:
             return len(self.episodes)
 
+    def get_option(self, key):
+        return self.__options__.get(key)
+
     def set_option(self, key, value):
         self.__options__[key] = value
 

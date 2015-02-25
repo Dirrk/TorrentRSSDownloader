@@ -241,6 +241,12 @@ class DataStore():
         conn.close()
         return tor.folder
 
+    def get_all_subscriptions(self):
+        conn = sqlite3.connect(self.__db_file__)
+        subscriptions = get_subscriptions(conn, True)
+        conn.close()
+        return subscriptions
+
 
 def get_modified(conn):
 
@@ -279,17 +285,24 @@ def get_feeds(conn):
     return feeds
 
 
-def get_subscriptions(conn):
+def get_subscriptions(conn, all_subs=False):
 
     subscriptions = {}
 
     c = conn.cursor()
 
-    c.execute(
-        '''
-            SELECT id, name, feedid, plex_id, options FROM Subscriptions WHERE enabled = 1;
-        '''
-    )
+    if all_subs is True:
+        c.execute(
+            '''
+              SELECT id, name, feedid, plex_id, options FROM Subscriptions;
+            '''
+        )
+    else:
+        c.execute(
+            '''
+              SELECT id, name, feedid, plex_id, options FROM Subscriptions WHERE enabled = 1;
+            '''
+        )
     for sub in c.fetchall():
 
         opts = {}

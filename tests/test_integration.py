@@ -77,6 +77,7 @@ class TestIntegrationOfApp(unittest.TestCase):
     def test_nothing(self):
         self.assertEqual(True, True)
 
+
     @classmethod
     def tearDownClass(cls):
         if KEEP_FILE is False and os.path.exists(DB_FILE):
