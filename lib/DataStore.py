@@ -310,7 +310,7 @@ def get_subscriptions(conn, all_subs=False):
             opts = json.loads(sub[4])
 
         except Exception as e:
-            logging.exception(e.message)
+            logging.exception(e)
             opts = {}
 
         new_sub = Subscription(int(sub[0]), sub[1], int(sub[2]), opts)

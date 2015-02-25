@@ -192,7 +192,7 @@ class PlexHelper():
                     sub.plex_id = int(show.id)
                     ret_subs.append(sub)
                     found_show = int(show.id)
-                    logging.debug("Found show: ", show.title)
+                    logging.debug("Found show: " + str(show.title))
             if found_show != -1:
                 shows_not_in_subs = [show for show in shows_not_in_subs if int(show.id) == found_show]
             else:

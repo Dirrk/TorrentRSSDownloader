@@ -51,7 +51,7 @@ class TorrentService:
                             matched = sub.match(items)
                             if matched is not None and len(matched) > 0:
                                 for match in matched:
-                                    logging.debug("Found matches:", match.title)
+                                    logging.debug("Found matches:" + str(match.title))
 
                                     a_torrent = Torrent(match.link)
                                     a_torrent.subscriptionId = sub.id

@@ -44,7 +44,7 @@ class Torrent:
             return True
 
         except Exception as e:
-            logging.error("File failed to download: %s", self.link)
+            logging.error("File failed to download:" + str(self.link))
             logging.exception(e)
             self.status = TORRENT_STATES["ERROR"]
             return False
