@@ -63,7 +63,7 @@ class TestIntegrationOfApp(unittest.TestCase):
                     self.assertIsInstance(match, Item)
                     a_torrent = Torrent(match.link)
                     a_torrent.subscriptionId = sub.id
-                    a_torrent.final_location = plex.PlexHelper.find_location(sub.plex_id, match.episode)
+                    a_torrent.final_location = plex.PlexHelper.find_location(sub.plex_id, match.episodes[0])
                     if a_torrent.download() is True:
                         self.db.add_torrent(a_torrent)
                     else:

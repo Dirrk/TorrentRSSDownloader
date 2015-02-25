@@ -31,25 +31,35 @@ class TestItemObject(unittest.TestCase):
         self.ib = Item(
             '<item><title>Mountain Men S01E05 720p WEBRip H264-TURBO</title><link>https://iptorrents.com/download.php/1310224/Mountain.Men.S01E05.720p.WEBRip.H264-TURBO.torrent?torrent_pass=TOKEN</link><pubDate>Sat, 31 Jan 2015 17:50:06 +0000</pubDate><description>855 MB; TV/x264</description></item>')
 
+        self.ic = Item(
+            '<item><title>Parks and Recreation S07E12E13 720p HDTV X264-DIMENSION</title><link>https://iptorrents.com/download.php/1333450/Parks.and.Recreation.S07E12E13.720p.HDTV.X264-DIMENSION.torrent?torrent_pass=TOKEN</link><pubDate>Wed, 25 Feb 2015 02:24:29 +0000</pubDate><description>1.04 GB; TV/x264</description></item>')
+
     def test_item(self):
         self.assertIsInstance(self.ia, Item)
         self.assertIsInstance(self.ib, Item)
+        self.assertIsInstance(self.ic, Item)
 
     def test_seasonAndEpisodes(self):
-        self.assertEqual(self.ia.episode, "20140130")
-        self.assertEqual(self.ib.episode, "S01E05")
+        self.assertEqual(self.ia.episodes[0], "20140130")
+        self.assertEqual(self.ib.episodes[0], "S01E05")
+        self.assertEqual(self.ic.episodes[0], "S07E12")
+        self.assertEqual(len(self.ic.episodes), 2)
+        self.assertEqual(self.ic.episodes[1], "S07E13")
 
     def test_Size(self):
         self.assertGreaterEqual(self.ia.size, 1000)
         self.assertGreaterEqual(self.ib.size, 850)
+        self.assertGreaterEqual(self.ic.size, 1000)
 
     def test_Title(self):
         self.assertRegexpMatches(self.ia.title, 'The.Late.Late.Show.*')
         self.assertRegexpMatches(self.ib.title, 'Mountain.Men*')
+        self.assertRegexpMatches(self.ic.title, '^Parks.and.Recreation.*')
 
     def test_Quality(self):
         self.assertGreaterEqual(self.ia.quality, 720)
         self.assertGreaterEqual(self.ib.quality, 720)
+        self.assertGreaterEqual(self.ic.quality, 720)
 
     def test_Times(self):
         iatimestring = date.strftime(self.ia.pubDate, "%a, %d %b %Y %H:%M:%S +0000")
@@ -151,7 +161,7 @@ class TestSubscriptionObject(unittest.TestCase):
         print "Matches object:", matches
         self.assertEqual(len(matches), 1)
         self.assertIsInstance(matches[0], Item)
-        self.assertEqual(matches[0].episode, "S01E05")
+        self.assertEqual(matches[0].episodes[0], "S01E05")
         self.assertEqual(len(self.sub.episodes), 1)
         self.assertEqual(self.sub.add_episode("S01E01"), 2)
         self.assertEqual(self.sub.add_episode("S01E02"), 3)

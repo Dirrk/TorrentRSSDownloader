@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 import re
 
 
-es = re.compile("(S[0-9]+E[0-9]+|20[0-9][0-9].[0-9]+.[0-9]+)")
+es = re.compile("(20[0-9][0-9].[0-9]+.[0-9]+|S[0-9]+(?:E[0-9][0-9])+)", re.IGNORECASE)
 
 
 class Item:
@@ -37,7 +37,7 @@ class Item:
             print "Invalid format"
 
         self.size = parse_size(self.description)
-        self.episode = parse_episode(self.title)
+        self.episodes = parse_episode(self.title)
         self.quality = parse_quality(self.title)
 
 
@@ -55,11 +55,25 @@ def parse_size(desc):
 
 def parse_episode(title):
     episode = ""
+    ret = []
     ep = es.search(title)
     if ep is not None:
         episode = ep.group().replace(" ", "").replace("-", "").replace(".", "")
+        data = re.split('[E]', episode, re.IGNORECASE)
+        season = data[0]
+        if len(data) > 1:
+            episodes = data[1:]
+            for ep in episodes:
+                ret.append(season + "E" + ep)
+        else:
+            ret.append(season)
+    else:
+        print "Did not match regex", title
+        return [""]
 
-    return episode
+    print "ReturnValue", ret
+
+    return ret
 
 
 def parse_quality(title):
