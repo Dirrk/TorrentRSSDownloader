@@ -69,7 +69,6 @@ class Torrent:
         if self.status == TORRENT_STATES["DOWNLOADED"]:
             self._organize()
 
-        print "Status: ", changed
         return (changed - self.status) == 0
 
     def _organize(self):

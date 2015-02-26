@@ -49,7 +49,7 @@ class Feed:
                     temporary_item = Item(rss_item)
 
                     # If newer than last pub add to return items
-                    if time.mktime(temporary_item.pubDate.timetuple()) > self.last_pub:
+                    if time.mktime(temporary_item.pubDate.timetuple()) - time.timezone > self.last_pub:
                         items.append(temporary_item)
                 except ValueError:
                     print "Could not process an rss_item skipping"
@@ -61,7 +61,7 @@ class Feed:
             logging.exception(e)
 
         if len(items) > 0:
-            self.last_pub = time.mktime(items[0].pubDate.timetuple())
+            self.last_pub = time.mktime(items[0].pubDate.timetuple()) - time.timezone
 
         self.last_run = time.time()
         return items
