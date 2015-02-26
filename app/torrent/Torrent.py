@@ -57,11 +57,11 @@ class Torrent:
                 self.file):
             self.status = TORRENT_STATES["TORRENT_RETRIEVED"]
 
-        elif self.status == TORRENT_STATES["TORRENT_RETRIEVED"] and os.path.exists(
+        elif self.status <= TORRENT_STATES["TORRENT_RETRIEVED"] and os.path.exists(
                 os.path.join(settings.DOWNLOAD_DIRECTORY, self.folder)):
             self.status = TORRENT_STATES["DOWNLOADING"]
 
-        elif self.status == TORRENT_STATES["DOWNLOADING"] and os.path.exists(
+        elif self.status <= TORRENT_STATES["DOWNLOADING"] and os.path.exists(
                 os.path.join(settings.COMPLETE_DIRECTORY, self.folder)) and not os.path.exists(
                 os.path.join(settings.DOWNLOAD_DIRECTORY, self.folder)):
             self.status = TORRENT_STATES["DOWNLOADED"]
@@ -133,8 +133,10 @@ class Torrent:
             shutil.copy(match_video, self.final_location)
             return
 
-        if extract_file(file, self.final_location) is True:
+        if extract_file(file, self.final_location) is not True:
             self.status = TORRENT_STATES["FATAL"]
+        else:
+            self.status = TORRENT_STATES["COMPLETE"]
 
     def to_string(self):
         my_status = [key for key in TORRENT_STATES if TORRENT_STATES[key] == self.status][0]

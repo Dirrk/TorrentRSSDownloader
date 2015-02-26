@@ -28,6 +28,11 @@ class TorrentService:
             if sub.id != 0:
                 self.db.update_subscription(sub)
             else:
+                feeds = [self.db.feeds[key] for key in self.db.feeds.keys()]
+
+                if len(feeds) > 0:
+                    sub.feedId = feeds[0].id
+
                 self.db.add_subscription(sub)
 
         self._continue = True
@@ -67,7 +72,8 @@ class TorrentService:
 
             for t_id in self.db.torrents:
                 torrent = self.db.torrents[t_id]
-                if torrent.check_status() is True:
+                if torrent.check_status() is False:
                     logging.warn(torrent.to_string())
+                    self.db.update_torrent(torrent)
 
             time.sleep(15)

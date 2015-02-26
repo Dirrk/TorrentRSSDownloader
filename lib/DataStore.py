@@ -275,9 +275,9 @@ def get_feeds(conn):
         # id, url, name="new feed", frequency=300
         new_feed = Feed(int(feed[0]), feed[1], feed[2], int(feed[3]))
         try:
-            new_feed.last_run = float(feed[4])
-        except Exception:
-            pass
+            new_feed.last_pub = int(feed[4])
+        except Exception as e:
+            logging.exception(e)
 
         feeds['Feed-' + str(feed[0])] = new_feed
         logging.debug('Added Feed-' + str(feed[0]))

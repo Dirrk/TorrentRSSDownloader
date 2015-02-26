@@ -31,6 +31,7 @@ class Feed:
         :return: Array of Items
         """
         items = []
+        logging.debug("Feed " + self.name + " is retrieving list")
 
         try:
             # Download from url
