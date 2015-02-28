@@ -112,8 +112,9 @@ class Subscription:
                 if self.__options__.get('episode_match') is True and len(match.episodes) >= 1:
                     for ep in match.episodes:
                         try:
-                            self.episodes.index(ep)
-                            print "Match blocked, because episode already exists"
+                            if len(ep) > 3:
+                                self.episodes.index(ep)
+                                print "Match blocked, because episode already exists " + str(ep)
                         except ValueError:
                             if matches2.get(ep) is None:
                                 matches2[ep] = [match]

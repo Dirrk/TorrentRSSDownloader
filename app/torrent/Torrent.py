@@ -157,6 +157,8 @@ def extract_file(archive, dst):
     # Windows use 7zip
     if os.name == 'nt':
         if settings.SEVEN_ZIP is not None:
+            if not os.path.exists(dst):
+                os.mkdir(dst)
             # C:\7zip\7z.exe e -o"F:\test-area\dev\Plex_Area\Drive A\TV\Show ABC\S1" "F:\test-area\dev\complete\My.Favorite.Show.S01E02\Laggies.2014.LIMITED.720p.BRRiP.X264.Ac3.CrEwSaDe.Sample.zip.001"
             cmd = settings.SEVEN_ZIP, '-y', 'x', '-o' + dst, archive
             print cmd

@@ -69,7 +69,6 @@ def parse_episode(title):
         else:
             ret.append(season)
     else:
-        logging.debug("Did not match regex " + str(title))
         return [""]
 
     return ret
