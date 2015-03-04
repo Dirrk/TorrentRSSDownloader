@@ -12,7 +12,7 @@ from app.torrent.Torrent import Torrent
 import app.settings as settings
 
 DB_FILE = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\integration_test_database.db"
-KEEP_FILE = True
+KEEP_FILE = False
 
 
 class TestIntegrationOfApp(unittest.TestCase):

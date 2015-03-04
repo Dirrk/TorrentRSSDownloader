@@ -37,8 +37,9 @@ class TestBEncode(unittest.TestCase):
 class TestTorrent(unittest.TestCase):
     def setUp(self):
         self.longMessage = True
+        self.token = str(os.getenv('TOKEN'))
         self.a = Torrent(
-            "https://iptorrents.com/download.php/1323172/Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD.torrent?torrent_pass=TOKEN")
+            "https://iptorrents.com/download.php/1323172/Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD.torrent?torrent_pass=" + self.token)
 
     def test_torrent_file(self):
         self.assertEqual(self.a.file,
@@ -51,7 +52,7 @@ class TestTorrent(unittest.TestCase):
 
     def test_check_status(self):
         self.assertEqual(self.a.status, TORRENT_STATES["NEW"])
-        self.assertTrue(self.a.check_status())
+        self.assertFalse(self.a.check_status())
 
     def test_organize_3(self):
         first = Torrent(

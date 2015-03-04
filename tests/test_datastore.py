@@ -5,7 +5,8 @@ from os import remove as rm
 from os import path
 from app.rss.Feed import Feed
 from app.rss.Subscription import Subscription
-db_file = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\database.db"
+
+db_file = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\test2_database.db"
 db_test_file = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\test_database.db"
 from lib.DataStore import DataStore
 
@@ -116,8 +117,11 @@ class TestDataStoreObject(unittest.TestCase):
     def setUpClass(cls):
         if path.exists(db_test_file):
             rm(db_test_file)
+        if path.exists(db_file):
+            rm(db_file)
 
     @classmethod
     def tearDownClass(cls):
         if KEEP_TEST_FILE is not True:
             rm(db_test_file)
+            rm(db_file)

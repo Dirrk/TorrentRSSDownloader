@@ -5,7 +5,6 @@ from datetime import datetime as date
 import time
 
 import app.settings as settings
-
 from app.rss.Feed import Feed
 from app.rss.Item import Item
 from app.rss.Subscription import Subscription
@@ -81,7 +80,7 @@ class TestFeedObject(unittest.TestCase):
     def setUp(self):
         self.longMessage = True
         self.myFeed = Feed(1,
-                           'https://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=TOKEN',
+                           settings.FEED[0],
                            "My Name", 3)
 
     def test_basic_values(self):

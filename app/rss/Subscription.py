@@ -1,6 +1,7 @@
 __author__ = 'Dirrk'
 import datetime
 import time
+import logging
 
 import re
 
@@ -57,7 +58,6 @@ class Subscription:
     def add_episode(self, id):
         try:
             self.episodes.index(id)
-            print "Cannot add an episode that is already found"
         except ValueError:
             self.episodes.append(id)
         finally:
@@ -73,7 +73,6 @@ class Subscription:
 
         if self.__options__.get('waitTime') != 0 and (datetime.datetime.now() - time.localtime(
                 self.__options__.get('lastMatched'))).seconds < self.__options__.get('waitTime') * 3600:
-            print "WaitTime: ", self.__options__.get("waitTime")
             return []
 
         matches = []
@@ -88,7 +87,6 @@ class Subscription:
                 test_exclude = exclude.search(item.title)
                 if test_exclude is None:
                     matches.append(item)
-                    print "Round #1 match: ", item.title
 
         matches2 = {
             "__NO__EPISODE__": []
@@ -106,22 +104,20 @@ class Subscription:
                 if p is not None:
                     match.quality += len(p.groups()) * 10
 
-                print "Round #2 (After Size/Quality): ", match.title
-
                 # Filter episodes
                 if self.__options__.get('episode_match') is True and len(match.episodes) >= 1:
                     for ep in match.episodes:
                         try:
                             if len(ep) > 3:
                                 self.episodes.index(ep)
-                                print "Match blocked, because episode already exists " + str(ep)
+                                logging.debug("Match blocked, because episode already exists " + str(ep))
                         except ValueError:
                             if matches2.get(ep) is None:
                                 matches2[ep] = [match]
                             else:
                                 matches2[ep].append(match)
                 elif self.__options__.get('episode_match') is True:
-                    print "Found season download but this code is not implimented so I am skipping it"
+                    logging.debug("Found season download but this code is not implimented so I am skipping it")
                 else:
                     matches2["__NO__EPISODE__"].append(match)
 
@@ -131,13 +127,10 @@ class Subscription:
             if len(matches2[key]) > 0:
                 # Sort for best quality
                 matches2[key].sort(lambda a, b: b.quality - a.quality)
-                print "Title / Quality"
-                for val in matches2[key]:
-                    print val.title, val.quality
 
                 # Add to return stack
                 return_matches.append(matches2[key][0])
-                print "Final round: ", matches2[key][0].title
+                logging.debug("Final round: " + str(matches2[key][0].title))
                 self.__options__["lastMatched"] = time.time()
 
                 # Add to episode list
