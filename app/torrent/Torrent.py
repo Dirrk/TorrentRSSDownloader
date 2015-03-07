@@ -3,6 +3,8 @@ __author__ = 'Dirrk'
 import logging
 import shutil
 import subprocess
+import time
+import math
 
 import requests
 from app.torrent.bencode import torrent_file_to_dictionary as infoParser
@@ -19,6 +21,7 @@ class Torrent:
         self.folder = folder  # Folder that files will be contained in
         self.subscriptionId = subscription_id  # Local Subscription Id
         self.final_location = None  # Location we are going to move the file to
+        self.status_time = math.ceil(time.time())
 
         if self.file is None:
             my_file = re.split('/', self.link)
@@ -149,7 +152,8 @@ TORRENT_STATES = {
     "DOWNLOADED": 3,
     "COMPLETE": 4,
     "ERROR": 5,
-    "FATAL": 6
+    "FATAL": 6,
+    "FINISHED": 7
 }
 
 

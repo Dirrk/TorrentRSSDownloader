@@ -79,10 +79,12 @@ class DataStore():
                     subscriptionid	INTEGER NOT NULL,
                     folder TEXT NOT NULL PRIMARY KEY,
                     file TEXT,
-                    final_location TEXT
+                    final_location TEXT,
+                    status_time INTEGER DEFAULT '0'
                 );
                 '''
             )
+            c.execute("INSERT INTO SETTINGS VALUES ('DB_VERSION', 2);")
             c.execute("INSERT INTO SETTINGS VALUES ('Feeds', 1);")
             conn.commit()
             self.modified = 1
@@ -221,8 +223,9 @@ class DataStore():
         c = conn.cursor()
         c.execute(
             '''
-              INSERT INTO Torrents(link,status,subscriptionid,file,folder,final_location) VALUES (?,?,?,?,?,?)
-            ''', (tor.link, tor.status, tor.subscriptionId, tor.file, tor.folder, tor.final_location)
+              INSERT INTO Torrents(link,status,subscriptionid,file,folder,final_location,status_time) VALUES (?,?,?,?,?,
+              ?,?)
+            ''', (tor.link, tor.status, tor.subscriptionId, tor.file, tor.folder, tor.final_location, tor.status_time)
         )
         conn.commit()
         conn.close()
@@ -234,8 +237,9 @@ class DataStore():
         c = conn.cursor()
         c.execute(
             '''
-              UPDATE Torrents SET link=?, status=?, subscriptionid=?,file=?, final_location=? WHERE folder=?
-            ''', (tor.link, tor.status, tor.subscriptionId, tor.file, tor.final_location, tor.folder)
+              UPDATE Torrents SET link=?, status=?, subscriptionid=?,file=?, final_location=?, status_time=?
+              WHERE folder=?
+            ''', (tor.link, tor.status, tor.subscriptionId, tor.file, tor.final_location, tor.status_time, tor.folder)
         )
         conn.commit()
         conn.close()
@@ -345,13 +349,14 @@ def get_torrents(conn):
     d = conn.cursor()
     d.execute(
         '''
-            SELECT link, status, subscriptionid, folder, file, final_location FROM Torrents WHERE status < 4
+            SELECT link, status, subscriptionid, folder, file, final_location, status_time FROM Torrents WHERE status < 4
         '''
     )
     torrents = {}
     for tor in d.fetchall():
         a_torrent = Torrent(tor[0], int(tor[1]), tor[4], tor[3], tor[2])
         a_torrent.final_location = tor[5]
+        a_torrent.status_time = int(tor[6])
         torrents[a_torrent.folder] = a_torrent
 
     return torrents
