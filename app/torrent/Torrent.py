@@ -13,6 +13,9 @@ import os
 import app.settings as settings
 
 
+DAY_IN_SECONDS = 86400
+
+
 class Torrent:
     def __init__(self, link, status=0, file=None, folder="", subscription_id=0):
         self.link = link
@@ -72,7 +75,24 @@ class Torrent:
         if self.status == TORRENT_STATES["DOWNLOADED"]:
             self._organize()
 
-        return (changed - self.status) == 0
+        elif self.status == TORRENT_STATES["COMPLETE"] and self.status_time - math.ceil(time.time()) >= DAY_IN_SECONDS \
+                * settings.TORRENT_SHARE_TIME:
+            self.status = TORRENT_STATES["FINISHED"]
+
+        elif self.status == TORRENT_STATES["COMPLETE"] and not os.path.exists(
+                os.path.join(settings.COMPLETE_DIRECTORY, self.folder)):  # Completed but deleted
+            self.status = TORRENT_STATES["FINISHED"]
+
+        elif self.status == TORRENT_STATES["FATAL"] and ((not os.path.exists(
+                os.path.join(settings.COMPLETE_DIRECTORY, self.folder)) or self.status_time - math.ceil(time.time()) >=
+                DAY_IN_SECONDS * settings.TORRENT_SHARE_TIME)):
+            self.status = TORRENT_STATES["FINISHED"]
+
+        has_changed = (changed - self.status) == 0
+        if has_changed is True:
+            self.status_time = math.ceil(time.time())
+
+        return has_changed
 
     def _organize(self):
 

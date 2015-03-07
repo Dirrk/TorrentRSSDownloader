@@ -21,6 +21,7 @@ EMAIL_DATA = {
     },
     "FREQUENCY": 7
 }
+TORRENT_SHARE_TIME = 14
 FEED = ("http://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=" + os.environ.get('TOKEN'),)
 PLEX_TV_SECTION = 2
 
