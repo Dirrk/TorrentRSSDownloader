@@ -6,8 +6,17 @@ from os import path
 from app.rss.Feed import Feed
 from app.rss.Subscription import Subscription
 
-db_file = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\test2_database.db"
-db_test_file = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\test_database.db"
+
+db_folder = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\"
+db_file = db_folder + "test2_database.db"
+db_test_file = db_folder + "test_database.db"
+db_test_upgrade_files = [
+    {"File": "torrents-version-1", "Version": 1},
+    {"File": "torrents-version-2", "Version": 2},
+    {"File": "torrents-version-3", "Version": 3}
+]
+
+
 from lib.DataStore import DataStore
 
 KEEP_TEST_FILE = False

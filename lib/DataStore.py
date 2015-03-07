@@ -11,6 +11,9 @@ from app.torrent.Torrent import Torrent
 import os.path as path
 
 
+__DB_VERSION__ = 3
+
+
 class DataStore():
     def __init__(self, a_file=None):
         self.feeds = {}
@@ -44,8 +47,8 @@ class DataStore():
                 '''
                 CREATE TABLE Settings
                 (
-                    name TEXT NOT NULL,
-                    version INTEGER NOT NULL DEFAULT '0'
+                    id TEXT NOT NULL PRIMARY KEY,
+                    val TEXT NOT NULL DEFAULT '0'
                 );
                 '''
             )
@@ -84,14 +87,14 @@ class DataStore():
                 );
                 '''
             )
-            c.execute("INSERT INTO SETTINGS VALUES ('DB_VERSION', 2);")
-            c.execute("INSERT INTO SETTINGS VALUES ('Feeds', 1);")
+            c.execute("INSERT INTO SETTINGS VALUES ('DB_VERSION', ?);", str(__DB_VERSION__))
+            c.execute("INSERT INTO SETTINGS VALUES ('Feeds', '1');")
             conn.commit()
             self.modified = 1
             conn.close()
 
         else:
-            logging.info("Upgrade db")
+            self.upgrade(__DB_VERSION__)
 
     def load(self):
         """
@@ -105,6 +108,9 @@ class DataStore():
             logging.warn("File does not exist %s" % self.__db_file__)
             self.create()
         else:
+            if self.upgrade(__DB_VERSION__) is False:
+                raise sqlite3.IntegrityError("Database failed to upgrade to current version!")
+
             self.modified = -1
             self.reload()
 
@@ -124,7 +130,7 @@ class DataStore():
             # Connect to sql
             conn = sqlite3.connect(self.__db_file__)
 
-            reload_feeds = self.modified < get_modified(conn)
+            reload_feeds = self.modified < get_settings_value(conn, "Feeds", int)
 
             if reload_feeds:
                 self.feeds = get_feeds(conn)
@@ -132,10 +138,85 @@ class DataStore():
             # Retrieve data
             self.subscriptions = get_subscriptions(conn)
             self.torrents = get_torrents(conn)
-            self.modified = get_modified(conn)
+            self.modified = get_settings_value(conn, "Feeds", int)
 
             conn.close()
             return reload_feeds
+
+    def upgrade(self, db_version=None):
+
+        # Added for unit testing
+        if db_version is None:
+            db_version = __DB_VERSION__
+
+        # Get the current db version
+        current_version = get_db_version()
+        count = -1
+
+        while current_version != db_version and count <= db_version:
+
+            conn = sqlite3.connect(self.__db_file__)
+            c = conn.cursor()
+            count += 1
+            if current_version == 1:
+                # run steps to upgrade
+                c.execute(
+                    '''
+                      ALTER TABLE Torrents
+                      ADD COLUMN status_time INTEGER DEFAULT '0'
+                    ''')
+                c.execute("INSERT INTO SETTINGS VALUES ('DB_VERSION', 2);")
+                conn.commit()
+
+            elif current_version == 2:
+                # run steps to upgrade
+                # Create Temporary Table
+                c.execute(
+                    '''
+                        CREATE TABLE SettingsNew
+                        (
+                            id TEXT NOT NULL PRIMARY KEY,
+                            val TEXT NOT NULL DEFAULT '0'
+                        );
+                    '''
+                )
+                # Fill with data
+                c.execute("INSERT INTO SettingsNew SELECT * FROM Settings")
+
+                # Change the version
+                c.execute("UPDATE SettingsNew SET val = '3' WHERE id = 'DB_VERSION'")
+
+                # Verify the version and creation
+                if verify_sql_change(c, "SELECT val FROM SettingsNew WHERE id='DB_VERSION'", '3',
+                                     'SettingsNew') is not True:
+                    conn.rollback()
+                    conn.close()
+                    raise sqlite3.DatabaseError("Failed to upgrade to db_version 3")
+
+                conn.commit()
+                logging.info("Backed up changes and proceeding to complete upgrade")
+
+                # Drop Settings Table
+                c.execute("DROP TABLE Settings")
+
+                # Rename Temporary Table to Settings
+                c.execute("ALTER TABLE SettingsNew RENAME TO Settings")
+                # verify
+                if verify_sql_change(c, "SELECT val FROM Settings WHERE id='DB_VERSION'", '3',
+                                     'Settings') is not True:
+                    conn.rollback()
+                    conn.close()
+                    raise sqlite3.DatabaseError("Failed to finish table conversion for db_version 3")
+                conn.commit()
+
+            conn.close()
+            current_version = get_db_version()
+
+        if count > db_version:
+            raise sqlite3.DatabaseError("Count broke upgrade loop!\r\nExpected Version: " + str(db_version) + '\r\n' +
+                                        'Actual Version: ' + current_version)
+        else:
+            return True
 
     # Called after a subscription has been matched which is the only time anything could change
     def update_subscription(self, sub):
@@ -252,17 +333,17 @@ class DataStore():
         return subscriptions
 
 
-def get_modified(conn):
+def get_settings_value(conn, key, a_type=int):
 
     c = conn.cursor()
 
-    c.execute('SELECT version FROM SETTINGS WHERE name="Feeds"')
+    c.execute('SELECT val FROM SETTINGS WHERE id=?', (str(key),))
 
     db_mod = c.fetchone()
     if db_mod is None:
-        return 0
+        return None
     else:
-        return int(db_mod[0])
+        return a_type(db_mod[0])
 
 
 def get_feeds(conn):
@@ -360,3 +441,54 @@ def get_torrents(conn):
         torrents[a_torrent.folder] = a_torrent
 
     return torrents
+
+
+def get_db_version(conn):
+    d = conn.cursor()
+    d.execute(
+        '''
+            PRAGMA table_info('Settings')
+        '''
+    )
+    columns = d.fetchall()
+    if len(columns) == 2:
+        if columns[0][1] == 'name' and columns[1][1] == 'version':
+            # 1 and 2
+            d.execute("SELECT version FROM SETTINGS WHERE name='DB_VERSION'")
+            db_mod = d.fetchone()
+            if db_mod is None:
+                return 1
+            else:
+                return 2
+
+        elif columns[0][1] == 'id' and columns[1][1] == 'val':
+            # 3 and up
+            curr_version = get_settings_value(conn, 'DB_VERSION', int)
+            if curr_version is not None:
+                return curr_version
+            else:
+                raise sqlite3.DataError("Current version unknown")
+
+
+# verify_sql_change(conn, c, "SELECT val FROM SettingsNew WHERE id='DB_VERSION'", '3', 'SettingsNew')
+def verify_sql_change(cursor, get_one, should_equal, table_name):
+    cursor.execute(get_one)
+
+    the_value = cursor.fetchone()
+    if the_value == should_equal:
+        logging.info("Verified changes to table" + str(table_name))
+        return True
+    elif the_value is None:
+        cursor.execute("PRAGMA table_info(?)", (str(table_name),))
+        rows = cursor.fetchall()
+        if rows is None:
+            reason = "Failed to create database table" + str(table_name)
+        else:
+            reason = "Failed because of syntax in change for table", table_name, \
+                     "\r\n\tColumnId\tName\tType\tdefault\tisPrimary\r\n"
+            for row in rows:
+                reason += "\t" + "\t".join(row) + "\r\n"
+        logging.error(reason)
+    else:
+        logging.error("Failed because value: " + str(the_value) + " != " + str(should_equal))
+    return False
