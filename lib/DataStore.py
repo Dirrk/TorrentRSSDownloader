@@ -23,6 +23,7 @@ class DataStore():
             a_file = settings.DATA_FILE
         self.__db_file__ = a_file
         self.modified = 0
+        self.db_version = None
 
     def create(self):
 
@@ -91,10 +92,12 @@ class DataStore():
             c.execute("INSERT INTO SETTINGS VALUES ('Feeds', '1');")
             conn.commit()
             self.modified = 1
+            self.db_version = __DB_VERSION__
             conn.close()
 
         else:
-            self.upgrade(__DB_VERSION__)
+            print "Upgrading"
+            return self.upgrade(__DB_VERSION__)
 
     def load(self):
         """
@@ -108,7 +111,7 @@ class DataStore():
             logging.warn("File does not exist %s" % self.__db_file__)
             self.create()
         else:
-            if self.upgrade(__DB_VERSION__) is False:
+            if self.db_version is None and self.upgrade(__DB_VERSION__) is False:
                 raise sqlite3.IntegrityError("Database failed to upgrade to current version!")
 
             self.modified = -1
@@ -150,15 +153,18 @@ class DataStore():
             db_version = __DB_VERSION__
 
         # Get the current db version
-        current_version = get_db_version()
+        conn = sqlite3.connect(self.__db_file__)
+        current_version = get_db_version(conn)
+        conn.close()
+
         count = -1
 
         while current_version != db_version and count <= db_version:
 
             conn = sqlite3.connect(self.__db_file__)
+
             c = conn.cursor()
-            count += 1
-            if current_version == 1:
+            if current_version <= 1:
                 # run steps to upgrade
                 c.execute(
                     '''
@@ -184,7 +190,7 @@ class DataStore():
                 c.execute("INSERT INTO SettingsNew SELECT * FROM Settings")
 
                 # Change the version
-                c.execute("UPDATE SettingsNew SET val = '3' WHERE id = 'DB_VERSION'")
+                c.execute("UPDATE SettingsNew SET val = 3 WHERE id = 'DB_VERSION'")
 
                 # Verify the version and creation
                 if verify_sql_change(c, "SELECT val FROM SettingsNew WHERE id='DB_VERSION'", '3',
@@ -209,12 +215,17 @@ class DataStore():
                     raise sqlite3.DatabaseError("Failed to finish table conversion for db_version 3")
                 conn.commit()
 
-            conn.close()
-            current_version = get_db_version()
+            else:
+                count += 1
 
-        if count > db_version:
-            raise sqlite3.DatabaseError("Count broke upgrade loop!\r\nExpected Version: " + str(db_version) + '\r\n' +
-                                        'Actual Version: ' + current_version)
+            current_version = get_db_version(conn)
+            conn.close()
+
+        self.db_version = current_version
+
+        if count > db_version or current_version != db_version:
+            logging.warn("Count was greater than db_version")
+            return False
         else:
             return True
 
@@ -470,25 +481,37 @@ def get_db_version(conn):
                 raise sqlite3.DataError("Current version unknown")
 
 
-# verify_sql_change(conn, c, "SELECT val FROM SettingsNew WHERE id='DB_VERSION'", '3', 'SettingsNew')
-def verify_sql_change(cursor, get_one, should_equal, table_name):
-    cursor.execute(get_one)
+def verify_sql_change(cursor, get_one, should_equal, table_name, ret_object=False):
+    the_value = None
+    reason = ""
+    try:
+        cursor.execute(get_one)
+        the_value = cursor.fetchone()[0]
+    except sqlite3.OperationalError as op_error:
+        reason = str(op_error.message) + '\r\n'
 
-    the_value = cursor.fetchone()
     if the_value == should_equal:
         logging.info("Verified changes to table" + str(table_name))
+        if ret_object is True:
+            return {"ret": True, "info": "Success"}
         return True
+
     elif the_value is None:
-        cursor.execute("PRAGMA table_info(?)", (str(table_name),))
+        cursor.execute("PRAGMA table_info(\'" + str(table_name) + "\')")
         rows = cursor.fetchall()
-        if rows is None:
-            reason = "Failed to create database table" + str(table_name)
+        if rows is None or len(rows) == 0:
+            reason += "Failed to create database table" + str(table_name)
         else:
-            reason = "Failed because of syntax in change for table", table_name, \
-                     "\r\n\tColumnId\tName\tType\tdefault\tisPrimary\r\n"
+            reason = "Failed because of syntax in change for table " + str(table_name) + \
+                     "\r\nColumnId\tName\tType\tdefault\tisPrimary\r\n\t"
             for row in rows:
-                reason += "\t" + "\t".join(row) + "\r\n"
-        logging.error(reason)
+                reason += "\t".join([str(col) for col in row])
+                reason += "\r\n\t"
     else:
-        logging.error("Failed because value: " + str(the_value) + " != " + str(should_equal))
+        reason = "Failed because value: " + str(the_value) + " != " + str(should_equal)
+
+    if ret_object is True:
+        return {"ret": False, "info": reason}
+    else:
+        logging.error(reason)
     return False

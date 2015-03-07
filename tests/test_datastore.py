@@ -1,5 +1,6 @@
 __author__ = 'Dirrk'
 import unittest
+import shutil
 
 from os import remove as rm
 from os import path
@@ -11,13 +12,12 @@ db_folder = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\"
 db_file = db_folder + "test2_database.db"
 db_test_file = db_folder + "test_database.db"
 db_test_upgrade_files = [
-    {"File": "torrents-version-1", "Version": 1},
-    {"File": "torrents-version-2", "Version": 2},
-    {"File": "torrents-version-3", "Version": 3}
+    {"original_file": "torrents-version-1.db", "file": "test-torrents-version-1.db", "Version": 1},
+    {"original_file": "torrents-version-2.db", "file": "test-torrents-version-2.db", "Version": 2},
+    {"original_file": "torrents-version-3.db", "file": "test-torrents-version-3.db", "Version": 3}
 ]
 
-
-from lib.DataStore import DataStore
+import lib.DataStore as db
 
 KEEP_TEST_FILE = False
 
@@ -25,10 +25,10 @@ KEEP_TEST_FILE = False
 class TestDataStoreObject(unittest.TestCase):
     def setUp(self):
         self.longMessage = True
-        self.db = DataStore(db_file)
+        self.db = db.DataStore(db_file)
         self.assertEqual(self.db.modified, 0)
 
-        self.db_test = DataStore(db_test_file)
+        self.db_test = db.DataStore(db_test_file)
         self.db_test.create()
         self.db_test.add_feed(Feed(0, "http://google.com", "Test_Google", 300))
         a = Subscription(0, "Test-Subscription", 1)
@@ -45,7 +45,7 @@ class TestDataStoreObject(unittest.TestCase):
 
         conn = sql.connect(db_test_file)
 
-        for a in conn.execute('SELECT * FROM SETTINGS').fetchall():
+        for a in conn.execute("SELECT * FROM SETTINGS WHERE id='Feeds'").fetchall():
             self.assertGreater(int(a[1]), 0)
             print "Found: ", a
 
@@ -134,3 +134,76 @@ class TestDataStoreObject(unittest.TestCase):
         if KEEP_TEST_FILE is not True:
             rm(db_test_file)
             rm(db_file)
+
+
+class TestDataStoreVersion(unittest.TestCase):
+    def setUp(self):
+        self.longMessage = True
+        for a_db_file in db_test_upgrade_files:
+            shutil.copyfile(db_folder + a_db_file['original_file'], db_folder + a_db_file['file'])
+
+    def tearDown(self):
+        for a_db_file in db_test_upgrade_files:
+            if path.exists(db_folder + a_db_file['file']) is True and KEEP_TEST_FILE is False:
+                rm(db_folder + a_db_file['file'])
+
+    def test_verify_sql_change(self):
+        import sqlite3
+
+        conn = sqlite3.connect(db_folder + db_test_upgrade_files[0]['file'])
+        c = conn.cursor()
+
+        verifier = db.verify_sql_change(c, "SELECT version FROM Settings WHERE name='Feeds'", 1, 'Settings', True)
+        print verifier
+        self.assertTrue(verifier['ret'], "Settings[Feeds] == 1 but it didn't because: " + verifier['info'])
+        self.assertEqual(verifier['info'], 'Success')
+
+        verifier = db.verify_sql_change(c, "SELECT nocolumn FROM Settings WHERE name='Feeds'", 1, 'Settings', True)
+        print verifier
+        self.assertFalse(verifier['ret'], "How did this column exist?:" + verifier['info'])
+        self.assertRegexpMatches(verifier['info'], 'Failed.because.of.syntax.*')
+
+        verifier = db.verify_sql_change(c, "SELECT version FROM Settings WHERE name='Feeds'", 2, 'Settings', True)
+        print verifier
+        self.assertFalse(verifier['ret'], "Feeds in settings should equal 1 not 2")
+        self.assertRegexpMatches(verifier['info'], 'Failed.because.value.*')
+
+        verifier = db.verify_sql_change(c, "SELECT version FROM SettingsBak WHERE name='Feeds'", 2, 'SettingsBak',
+                                        True)
+        print verifier
+        self.assertFalse(verifier['ret'], "SettingsBak should not exist!")
+        self.assertRegexpMatches(verifier['info'], 'Failed.to.create.database.table.*')
+        conn.close()
+
+    def test_get_db_version(self):
+        import sqlite3
+
+        for tests in db_test_upgrade_files:
+            conn = sqlite3.connect(db_folder + tests['file'])
+            ver = db.get_db_version(conn)
+            self.assertEqual(ver, tests['Version'])
+            conn.close()
+
+    def test_upgrade_to_2(self):
+
+        db_store_1 = db.DataStore(db_folder + db_test_upgrade_files[0]['file'])
+        db_store_2 = db.DataStore(db_folder + db_test_upgrade_files[1]['file'])
+
+        self.assertTrue(db_store_1.upgrade(2))
+        self.assertEqual(db_store_1.db_version, 2)
+        self.assertTrue(db_store_2.upgrade(2))
+
+    def test_upgrade_to_3(self):
+        for tests in db_test_upgrade_files:
+            db_store = db.DataStore(db_folder + tests['file'])
+            self.assertTrue(db_store.upgrade(3))
+
+    def test_create_upgrade(self):
+        for tests in db_test_upgrade_files:
+            db_store = db.DataStore(db_folder + tests['file'])
+            self.assertTrue(db_store.create())
+            self.assertEqual(db_store.db_version, 3)
+
+    def test_upgrade_to_fake_version(self):
+        db_store = db.DataStore(db_folder + db_test_upgrade_files[0]['file'])
+        self.assertFalse(db_store.upgrade(5))
