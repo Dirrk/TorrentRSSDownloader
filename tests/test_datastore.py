@@ -207,3 +207,11 @@ class TestDataStoreVersion(unittest.TestCase):
     def test_upgrade_to_fake_version(self):
         db_store = db.DataStore(db_folder + db_test_upgrade_files[0]['file'])
         self.assertFalse(db_store.upgrade(5))
+
+    def test_get_settings(self):
+        import sqlite3
+
+        conn = sqlite3.connect(db_folder + db_test_upgrade_files[2]['file'])
+        self.assertGreaterEqual(db.get_settings_value(conn, "Feeds", int), 1)
+        self.assertIsNone(db.get_settings_value(conn, "SomeValueNotinSettings"))
+        conn.close()

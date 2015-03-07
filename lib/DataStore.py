@@ -351,7 +351,7 @@ def get_settings_value(conn, key, a_type=int):
     c.execute('SELECT val FROM SETTINGS WHERE id=?', (str(key),))
 
     db_mod = c.fetchone()
-    if db_mod is None:
+    if db_mod is None or len(db_mod) == 0:
         return None
     else:
         return a_type(db_mod[0])
