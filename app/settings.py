@@ -13,6 +13,14 @@ DOWNLOAD_DIRECTORY = "F:\\test-area\\dev\\downloading"
 COMPLETE_DIRECTORY = "F:\\test-area\\dev\\complete"
 SEVEN_ZIP = "C:\\7zip\\7z.exe"
 PLEX_HOST = 'localhost:32400'
+EMAIL_DATA = {
+    "TO": [str(os.environ.get('SEND_TO'))],
+    "ACCOUNT": {
+        "USER": str(os.environ.get('EMAIL_ACCOUNT_USER')),
+        "PASS": str(os.environ.get('EMAIL_ACCOUNT_PASS')),
+    },
+    "FREQUENCY": 7
+}
 FEED = ("http://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=" + os.environ.get('TOKEN'),)
 PLEX_TV_SECTION = 2
 
