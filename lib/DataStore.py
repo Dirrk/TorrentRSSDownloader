@@ -491,7 +491,7 @@ def verify_sql_change(cursor, get_one, should_equal, table_name, ret_object=Fals
         reason = str(op_error.message) + '\r\n'
 
     if the_value == should_equal:
-        logging.info("Verified changes to table" + str(table_name))
+        logging.info("Verified changes to table " + str(table_name))
         if ret_object is True:
             return {"ret": True, "info": "Success"}
         return True
@@ -500,7 +500,7 @@ def verify_sql_change(cursor, get_one, should_equal, table_name, ret_object=Fals
         cursor.execute("PRAGMA table_info(\'" + str(table_name) + "\')")
         rows = cursor.fetchall()
         if rows is None or len(rows) == 0:
-            reason += "Failed to create database table" + str(table_name)
+            reason += "Failed to create database table " + str(table_name)
         else:
             reason = "Failed because of syntax in change for table " + str(table_name) + \
                      "\r\nColumnId\tName\tType\tdefault\tisPrimary\r\n\t"
