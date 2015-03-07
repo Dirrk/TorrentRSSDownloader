@@ -2,7 +2,6 @@ __author__ = 'Dirrk'
 
 import logging
 
-import app.settings as settings
 log = logging.getLogger()
 from lib.DataStore import DataStore
 import app.plex.plex as plex
@@ -14,7 +13,6 @@ class TorrentService:
     def __init__(self):
         self.db = DataStore()
         self._continue = False
-        log.info("Starting torrent download service debug=%s" % settings.__DEBUG__)
 
     def start(self):
 
