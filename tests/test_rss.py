@@ -113,7 +113,7 @@ class TestSubscriptionObject(unittest.TestCase):
         self.sub = Subscription(1, "Test Mountain Men", 12345, {})
         self.assertEqual(self.sub.id, 1)
         self.assertEqual(self.sub.name, "Test Mountain Men")
-        self.assertEqual(self.sub.feedId, 12345)
+        self.assertEqual(self.sub.feedid, 12345)
 
 
     def test_episodes(self):

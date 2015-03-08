@@ -9,9 +9,11 @@ from app.rss.Item import Item
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 
+# id, url, name, frequency
+
 
 class Feed:
-    def __init__(self, id, url, name="new feed", frequency=300):
+    def __init__(self, id, url, name="new feed", frequency=300, last_pub=0):
         """
         Create Feed
         :param id: id
@@ -23,8 +25,7 @@ class Feed:
         self.url = url
         self.id = id
         self.frequency = frequency
-        self.last_run = 0
-        self.last_pub = 0
+        self.last_run = last_pub
 
     def fetch_items(self):
         """
@@ -51,9 +52,6 @@ class Feed:
 
                 try:
                     temporary_item = Item(rss_item)
-
-                    # If newer than last pub add to return items (do I really care about this?)
-                    # if time.mktime(temporary_item.pubDate.timetuple()) - time.timezone > self.last_pub:
                     items.append(temporary_item)
                 except ValueError:
                     print "Could not process an rss_item skipping"
@@ -63,9 +61,6 @@ class Feed:
         except ET.ParseError as e:
             print "ParseError with feed ", e.message
             logging.exception(e)
-
-        if len(items) > 0:
-            self.last_pub = time.mktime(items[0].pubDate.timetuple()) - time.timezone
 
         self.last_run = time.time()
         return items

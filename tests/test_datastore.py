@@ -14,7 +14,8 @@ db_test_file = db_folder + "test_database.db"
 db_test_upgrade_files = [
     {"original_file": "torrents-version-1.db", "file": "test-torrents-version-1.db", "Version": 1},
     {"original_file": "torrents-version-2.db", "file": "test-torrents-version-2.db", "Version": 2},
-    {"original_file": "torrents-version-3.db", "file": "test-torrents-version-3.db", "Version": 3}
+    {"original_file": "torrents-version-3.db", "file": "test-torrents-version-3.db", "Version": 3},
+    {"original_file": "torrents-version-4.db", "file": "test-torrents-version-4.db", "Version": 4}
 ]
 
 import lib.DataStore as db
@@ -30,6 +31,7 @@ class TestDataStoreObject(unittest.TestCase):
 
         self.db_test = db.DataStore(db_test_file)
         self.db_test.create()
+        self.assertEqual(self.db_test.db_version, db.__DB_VERSION__)
         self.db_test.add_feed(Feed(0, "http://google.com", "Test_Google", 300))
         a = Subscription(0, "Test-Subscription", 1)
         a.add_episode("S01E01")
@@ -132,13 +134,19 @@ class TestDataStoreObject(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         if KEEP_TEST_FILE is not True:
-            rm(db_test_file)
-            rm(db_file)
+            try:
+                rm(db_test_file)
+                rm(db_file)
+            except:
+                pass
 
 
 class TestDataStoreVersion(unittest.TestCase):
     def setUp(self):
         self.longMessage = True
+        for a_db_file in db_test_upgrade_files:
+            if path.exists(db_folder + a_db_file['file']) is True:
+                rm(db_folder + a_db_file['file'])
         for a_db_file in db_test_upgrade_files:
             shutil.copyfile(db_folder + a_db_file['original_file'], db_folder + a_db_file['file'])
 
@@ -186,23 +194,28 @@ class TestDataStoreVersion(unittest.TestCase):
 
     def test_upgrade_to_2(self):
 
-        db_store_1 = db.DataStore(db_folder + db_test_upgrade_files[0]['file'])
-        db_store_2 = db.DataStore(db_folder + db_test_upgrade_files[1]['file'])
-
-        self.assertTrue(db_store_1.upgrade(2))
-        self.assertEqual(db_store_1.db_version, 2)
-        self.assertTrue(db_store_2.upgrade(2))
+        for tests in [test for test in db_test_upgrade_files if test['Version'] <= 2]:
+            db_store = db.DataStore(db_folder + tests['file'])
+            self.assertTrue(db_store.upgrade(2))
+            self.assertEqual(db_store.db_version, 2)
 
     def test_upgrade_to_3(self):
-        for tests in db_test_upgrade_files:
+        for tests in [test for test in db_test_upgrade_files if test['Version'] <= 3]:
             db_store = db.DataStore(db_folder + tests['file'])
             self.assertTrue(db_store.upgrade(3))
+            self.assertEqual(db_store.db_version, 3)
+
+    def test_upgrade_to_3(self):
+        for tests in [test for test in db_test_upgrade_files if test['Version'] <= 4]:
+            db_store = db.DataStore(db_folder + tests['file'])
+            self.assertTrue(db_store.upgrade(4))
+            self.assertEqual(db_store.db_version, 4)
 
     def test_create_upgrade(self):
         for tests in db_test_upgrade_files:
             db_store = db.DataStore(db_folder + tests['file'])
             self.assertTrue(db_store.create())
-            self.assertEqual(db_store.db_version, 3)
+            self.assertEqual(db_store.db_version, db.__DB_VERSION__)
 
     def test_upgrade_to_fake_version(self):
         db_store = db.DataStore(db_folder + db_test_upgrade_files[0]['file'])

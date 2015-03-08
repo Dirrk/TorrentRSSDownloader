@@ -11,7 +11,7 @@ from app.torrent.Torrent import Torrent
 import os.path as path
 
 
-__DB_VERSION__ = 3
+__DB_VERSION__ = 4
 
 
 class DataStore():
@@ -65,13 +65,20 @@ class DataStore():
             c.execute(
                 '''
                 CREATE TABLE Subscriptions
-                (
-                    id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    feedid INTEGER NOT NULL,
-                    options TEXT NOT NULL DEFAULT '{"reg_allow":"","onlyOnce":false,"episode_match":true,"waitTime":0,"preferred_release":"","maxSize":1000000000,"lastMatched":0,"minSize":0,"reg_exclude":"555DO-NOT-MATCH-THIS-REGEX-ESCAPE555","quality":-1}',
-                    enabled INTEGER DEFAULT '0',
-                    plex_id INTEGER DEFAULT '0'
+                        (
+                            id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                            name TEXT NOT NULL,
+                            feedid INTEGER NOT NULL,
+                            plex_id INTEGER DEFAULT '0',
+                            enabled INTEGER DEFAULT '1',
+                            reg_allow TEXT DEFAULT '',
+                            match_type TEXT DEFAULT 'episode',
+                            preferred_release TEXT DEFAULT '',
+                            max_size INTEGER DEFAULT '1000000000',
+                            min_size INTEGER DEFAULT '0',
+                            reg_exclude TEXT DEFAULT '555DO-NOT-MATCH-THIS-REGEX-ESCAPE555',
+                            quality INTEGER DEFAULT '-1',
+                            last_matched INTEGER DEFAULT '0'
                 );
                 '''
             )
@@ -132,6 +139,7 @@ class DataStore():
         else:
             # Connect to sql
             conn = sqlite3.connect(self.__db_file__)
+            conn.row_factory = dict_factory
 
             reload_feeds = self.modified < get_settings_value(conn, "Feeds", int)
 
@@ -161,6 +169,7 @@ class DataStore():
 
         while current_version != db_version and count <= db_version:
 
+            file = self.__db_file__
             conn = sqlite3.connect(self.__db_file__)
 
             c = conn.cursor()
@@ -215,6 +224,79 @@ class DataStore():
                     raise sqlite3.DatabaseError("Failed to finish table conversion for db_version 3")
                 conn.commit()
 
+            elif current_version == 3:
+                # run steps to upgrade to 4
+                # Create Temporary Table
+                c.execute(
+                    '''
+                        CREATE TABLE SubscriptionsBak
+                        (
+                            id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                            name TEXT NOT NULL,
+                            feedid INTEGER NOT NULL,
+                            plex_id INTEGER DEFAULT '0',
+                            enabled INTEGER DEFAULT '1',
+                            reg_allow TEXT DEFAULT '',
+                            match_type TEXT DEFAULT 'episode',
+                            preferred_release TEXT DEFAULT '',
+                            max_size INTEGER DEFAULT '1000000000',
+                            min_size INTEGER DEFAULT '0',
+                            reg_exclude TEXT DEFAULT '555DO-NOT-MATCH-THIS-REGEX-ESCAPE555',
+                            quality INTEGER DEFAULT '-1',
+                            last_matched INTEGER DEFAULT '0'
+                        );
+                    '''
+                )
+                # Fill with data
+                c.execute('''
+                      INSERT INTO SubscriptionsBak (id, name, feedid, plex_id, enabled) SELECT id, name, feedid,
+                      plex_id, enabled FROM Subscriptions
+                          ''')
+                # Change the version
+                c.execute("UPDATE Settings SET val = 4 WHERE id = 'DB_VERSION'")
+                conn.commit()
+
+                # Retrieve options
+                c.execute("SELECT id, options FROM Subscriptions")
+                all_subs = []
+                for sub in c.fetchall():
+                    if sub is not None and len(sub) == 2:
+                        id = sub[0]
+                        options = json.loads(sub[1])
+                        if options.get('episode_match') is True:
+                            match_type = 'episode'
+                        else:
+                            match_type = 'once'
+
+                        a_sub_arr = [options.get('reg_allow'), match_type, options.get('preferred_release'),
+                                     options.get('maxSize'), options.get('minSsize'), options.get('reg_exclude'),
+                                     options.get('quality'), options.get('lastMatched'), id]
+
+                        all_subs.append(a_sub_arr)
+
+                # Update DB
+                for a_sub in all_subs:
+                    c.execute('''
+                                UPDATE SubscriptionsBak SET
+                                    reg_allow=?,
+                                    match_type=?,
+                                    preferred_release=?,
+                                    max_size=?,
+                                    min_size=?,
+                                    reg_exclude=?,
+                                    quality=?,
+                                    last_matched=?
+                                WHERE id=?
+                              ''', a_sub)
+
+                # Drop Settings Table
+                c.execute("DROP TABLE Subscriptions")
+
+                # Rename Temporary Table to Settings
+                c.execute("ALTER TABLE SubscriptionsBak RENAME TO Subscriptions")
+
+                conn.commit()
+
             else:
                 count += 1
 
@@ -237,14 +319,14 @@ class DataStore():
 
         conn = sqlite3.connect(self.__db_file__)
 
-        new_opts = json.dumps(sub.__options__)
-
         c = conn.cursor()
 
         c.execute(
             '''
-              UPDATE Subscriptions SET feedid=?, enabled=?, plex_id=?, options=? WHERE id=?
-            ''', (sub.feedId, sub.enabled, sub.plex_id, new_opts, sub.id)
+              UPDATE Subscriptions SET name=?, feedid=?, plex_id=?, enabled=?, reg_allow=?, match_type=?,
+              preferred_release=?, max_size=?, min_size=?, reg_exclude=?, quality=?, last_matched=? WHERE id=?
+            ''', (sub.name, sub.feedId, sub.plex_id, sub.enabled, sub.reg_allow, sub.match_type, sub.preferred_release,
+                  sub.max_size, sub.min_size, sub.reg_exclude, sub.quality, sub.last_matched, sub.id)
         )
         c.execute(
             '''
@@ -273,7 +355,7 @@ class DataStore():
         c.execute(
             '''
               UPDATE Feeds SET last_pub=? WHERE id=?
-            ''', (feed.last_pub, feed.id)
+            ''', (feed.last_run, feed.id)
         )
         conn.commit()
         conn.close()
@@ -286,7 +368,7 @@ class DataStore():
         c.execute(
             '''
               INSERT INTO Feeds(url, name, frequency, last_pub) VALUES (?, ?, ?, ?);
-            ''', (feed.url, feed.name, feed.frequency, feed.last_pub)
+            ''', (feed.url, feed.name, feed.frequency, feed.last_run)
         )
         ret_id = c.lastrowid
         conn.commit()
@@ -345,16 +427,20 @@ class DataStore():
 
 
 def get_settings_value(conn, key, a_type=int):
-
+    conn.row_factory = dict_factory
     c = conn.cursor()
 
     c.execute('SELECT val FROM SETTINGS WHERE id=?', (str(key),))
+    try:
 
-    db_mod = c.fetchone()
-    if db_mod is None or len(db_mod) == 0:
+        db_mod = c.fetchone().get('val')
+
+        if db_mod is None:
+            return None
+        else:
+            return a_type(db_mod)
+    except:
         return None
-    else:
-        return a_type(db_mod[0])
 
 
 def get_feeds(conn):
@@ -368,15 +454,11 @@ def get_feeds(conn):
         '''
     )
     for feed in c.fetchall():
-        # id, url, name="new feed", frequency=300
-        new_feed = Feed(int(feed[0]), feed[1], feed[2], int(feed[3]))
-        try:
-            new_feed.last_pub = int(feed[4])
-        except Exception as e:
-            logging.exception(e)
+        # id, url, name="new feed", frequency=300, last_pub
+        new_feed = Feed(**feed)
 
-        feeds['Feed-' + str(feed[0])] = new_feed
-        logging.debug('Added Feed-' + str(feed[0]))
+        feeds['Feed-' + str(feed['id'])] = new_feed
+        logging.debug('Added Feed-' + str(feed['id']))
 
     return feeds
 
@@ -390,30 +472,22 @@ def get_subscriptions(conn, all_subs=False):
     if all_subs is True:
         c.execute(
             '''
-              SELECT id, name, feedid, plex_id, options FROM Subscriptions;
+              SELECT * FROM Subscriptions;
             '''
         )
     else:
         c.execute(
             '''
-              SELECT id, name, feedid, plex_id, options FROM Subscriptions WHERE enabled = 1;
+              SELECT * FROM Subscriptions WHERE enabled = 1;
             '''
         )
     for sub in c.fetchall():
 
-        opts = {}
-        try:
-            opts = json.loads(sub[4])
+        new_sub = Subscription(**sub)
 
-        except Exception as e:
-            logging.exception(e)
-            opts = {}
+        # new_sub.plex_id = int(sub[3])
 
-        new_sub = Subscription(int(sub[0]), sub[1], int(sub[2]), opts)
-
-        new_sub.plex_id = int(sub[3])
-
-        subscriptions['Subscription-' + str(sub[0])] = new_sub
+        subscriptions['Subscription-' + str(sub['id'])] = new_sub
 
         episodes = get_episodes(conn, new_sub.id)
 
@@ -432,7 +506,7 @@ def get_episodes(conn, id):
     )
     episodes = []
     for ep in d.fetchall():
-        episodes.append(ep[0])
+        episodes.append(ep['episode'])
 
     return episodes
 
@@ -446,15 +520,16 @@ def get_torrents(conn):
     )
     torrents = {}
     for tor in d.fetchall():
-        a_torrent = Torrent(tor[0], int(tor[1]), tor[4], tor[3], tor[2])
-        a_torrent.final_location = tor[5]
-        a_torrent.status_time = int(tor[6])
+        a_torrent = Torrent(**tor)
+        a_torrent.final_location = tor['final_location']
+        a_torrent.status_time = int('status_time')
         torrents[a_torrent.folder] = a_torrent
 
     return torrents
 
 
 def get_db_version(conn):
+    conn.row_factory = dict_factory
     d = conn.cursor()
     d.execute(
         '''
@@ -463,16 +538,16 @@ def get_db_version(conn):
     )
     columns = d.fetchall()
     if len(columns) == 2:
-        if columns[0][1] == 'name' and columns[1][1] == 'version':
+        if columns[0]['name'] == 'name' and columns[1]['name'] == 'version':
             # 1 and 2
             d.execute("SELECT version FROM SETTINGS WHERE name='DB_VERSION'")
             db_mod = d.fetchone()
-            if db_mod is None:
+            if db_mod is None or db_mod.get('version') is None:
                 return 1
             else:
                 return 2
 
-        elif columns[0][1] == 'id' and columns[1][1] == 'val':
+        elif columns[0]['name'] == 'id' and columns[1]['name'] == 'val':
             # 3 and up
             curr_version = get_settings_value(conn, 'DB_VERSION', int)
             if curr_version is not None:

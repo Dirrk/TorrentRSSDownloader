@@ -1,5 +1,4 @@
 __author__ = 'Dirrk'
-import datetime
 import time
 import logging
 
@@ -7,7 +6,9 @@ import re
 
 
 class Subscription:
-    def __init__(self, id, name, feed_id, inopts={}):
+    def __init__(self, id, name, feedid, plex_id=0, enabled=1, reg_allow='', match_type='episode',
+                 preferred_release='', max_size=1000000000, min_size=0,
+                 reg_exclude="555DO-NOT-MATCH-THIS-REGEX-ESCAPE555", quality=-1, last_matched=0):
         """
         Subscription Object
         :param name:
@@ -16,27 +17,18 @@ class Subscription:
         """
         self.id = id
         self.name = name
-        self.feedId = feed_id
+        self.feedId = feedid
         self.episodes = []
-        self.plex_id = 0
-        self.enabled = 1
-        options = {}
-
-        options['reg_allow'] = inopts.get('reg_allow') if inopts.get('reg_allow') is not None else ""
-        options['reg_exclude'] = inopts.get('reg_exclude') if inopts.get(
-            'reg_exclude') is not None else "555DO-NOT-MATCH-THIS-REGEX-ESCAPE555"
-        options['waitTime'] = inopts.get('waitTime') if inopts.get('waitTime') is not None else 0  # Hours
-        options['lastMatched'] = inopts.get('lastMatched') if inopts.get('lastMatched') is not None else 0
-        options['minSize'] = inopts.get('minSize') if inopts.get('minSize') is not None else 0
-        options['maxSize'] = inopts.get('maxSize') if inopts.get(
-            'maxSize') is not None else 1000000000  # Max of one petabyte ;)
-        options['quality'] = inopts.get('quality') if inopts.get('quality') is not None else -1
-        options['episode_match'] = inopts.get('episode_match') if inopts.get('episode_match') is not None else True
-        options['onlyOnce'] = inopts.get('onlyOnce') if inopts.get('onlyOnce') is not None else False
-        options['preferred_release'] = inopts.get('preferred_release') if inopts.get(
-            'preferred_release') is not None else ""
-
-        self.__options__ = options
+        self.plex_id = plex_id
+        self.enabled = enabled
+        self.reg_allow = reg_allow
+        self.match_type = match_type
+        self.preferred_release = preferred_release
+        self.max_size = max_size
+        self.min_size = min_size
+        self.reg_exclude = reg_exclude
+        self.quality = quality
+        self.last_matched = last_matched
 
     def add_episode(self, id):
         try:
@@ -46,30 +38,23 @@ class Subscription:
         finally:
             return len(self.episodes)
 
-    def get_option(self, key):
-        return self.__options__.get(key)
-
-    def set_option(self, key, value):
-        self.__options__[key] = value
-
     def match(self, items):
 
-        if self.__options__.get('waitTime') != 0 and (datetime.datetime.now() - time.localtime(
-                self.__options__.get('lastMatched'))).seconds < self.__options__.get('waitTime') * 3600:
-            return []
-
         matches = []
-        allow = re.compile(self.__options__.get('reg_allow'), re.IGNORECASE)
-        exclude = re.compile(self.__options__.get('reg_exclude'), re.IGNORECASE)
-        pref_release = re.compile(self.__options__.get('preferred_release'), re.IGNORECASE)
+        allow = re.compile(self.reg_allow, re.IGNORECASE)
+        exclude = re.compile(self.reg_exclude, re.IGNORECASE)
+        pref_release = re.compile(self.preferred_release, re.IGNORECASE)
 
         # First round of matching via title
         for item in items:
             test_allow = allow.search(item.title)
             if test_allow is not None:
-                test_exclude = exclude.search(item.title)
-                if test_exclude is None:
+                if self.reg_exclude == "555DO-NOT-MATCH-THIS-REGEX-ESCAPE555" or self.reg_exclude == '':
                     matches.append(item)
+                else:
+                    test_exclude = exclude.search(item.title)
+                    if test_exclude is None:
+                        matches.append(item)
 
         matches2 = {
             "__NO__EPISODE__": []
@@ -78,9 +63,8 @@ class Subscription:
         # Second round of matching
         for match in matches:
             # Size / Quality
-            if not (not (match.size == -1 or (match.size > self.__options__.get('minSize') and
-                                                      match.size < self.__options__.get('maxSize'))) or not (
-                            match.quality == -1 or match.quality >= self.__options__.get('quality'))):
+            if not (not (match.size == -1 or (match.size > self.min_size and match.size < self.max_size)) or not (
+                            match.quality == -1 or match.quality >= self.quality)):
 
                 # Find release info
                 p = pref_release.search(match.title)
@@ -88,7 +72,7 @@ class Subscription:
                     match.quality += len(p.groups()) * 10
 
                 # Filter episodes
-                if self.__options__.get('episode_match') is True and len(match.episodes) >= 1:
+                if self.match_type == 'episode' and len(match.episodes) >= 1:
                     for ep in match.episodes:
                         try:
                             if len(ep) > 3:
@@ -99,8 +83,8 @@ class Subscription:
                                 matches2[ep] = [match]
                             else:
                                 matches2[ep].append(match)
-                elif self.__options__.get('episode_match') is True:
-                    logging.debug("Found season download but this code is not implimented so I am skipping it")
+                elif self.match_type == 'once':
+                    logging.warn("Match type was not implemented!")
                 else:
                     matches2["__NO__EPISODE__"].append(match)
 
@@ -114,13 +98,13 @@ class Subscription:
                 # Add to return stack
                 return_matches.append(matches2[key][0])
                 logging.debug("Final round: " + str(matches2[key][0].title))
-                self.__options__["lastMatched"] = time.time()
+                self.last_matched = time.time()
 
                 # Add to episode list
                 if key != "__NO__EPISODE__":
                     self.episodes.append(key)
 
-        if len(return_matches) > 0 and self.__options__.get('onlyOnce') is True:
+        if len(return_matches) > 0 and self.match_type == 'onlyOnce':
             self.enabled = 0
 
         return return_matches
