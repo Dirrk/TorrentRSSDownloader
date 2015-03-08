@@ -8,7 +8,7 @@ import app.settings as settings
 from app.TorrentDownloadService import TorrentService
 
 
-__version__ = '1.1.1'
+__version__ = '1.1.2'
 
 
 # https://docs.python.org/2/library/logging.html#levels
@@ -17,6 +17,8 @@ def main(args):
     parser.add_argument('-d', '--database', type=str, default=settings.DATA_FILE,
                         help="location of the database to use")
     parser.add_argument('-e', '--env', default='', type=str, choices=['Dev', 'Stage', 'Production'])
+    parser.add_argument('--upgrade', action='store_true')
+    parser.add_argument('--install', action='store_true')
 
     # Parse config from arguments
     my_args = parser.parse_args(args)
@@ -41,8 +43,15 @@ def main(args):
     # Add the stream handler to the root logger
     root.addHandler(ch)
 
+    ts = TorrentService()
+    if my_args.install is True:
+        ts.install()
+
+    elif my_args.upgrade is True:
+        ts.upgrade()
+
     # Start application
-    TorrentService().start()
+    ts.start()
 
 
 if __name__ == "__main__":

@@ -12,8 +12,8 @@ from app.rss.Subscription import Subscription
 
 class ApiHelper():
     def __init__(self, host=None):
-        if host is None and settings.PLEX_HOST is None:
-            raise Exception("Provide Host or define PLEX_HOST in settings.py")
+        if host is None and settings.PLEX_HOST is None and settings.USE_PLEX is True:
+            raise Exception("Provide define PLEX_HOST or Disable USE_PLEX in settings.py")
         elif host is None:
             self.__host__ = settings.PLEX_HOST
         else:
@@ -46,6 +46,9 @@ class ApiHelper():
         return [Video(video) for video in self.plex_api_call('metadata/' + str(episode_id), 'Part')]
 
     def plex_api_call(self, uri, m_type='Directory'):
+
+        if settings.USE_PLEX is False:
+            return []
         try:
             r = requests.get('http://' + self.__host__ + '/library/' + str(uri))
             rss = ET.fromstring(r.content)

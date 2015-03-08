@@ -6,11 +6,16 @@ import os
 __ENV__ = os.environ.get('ENV')
 LOG_LEVEL = 10
 DATA_FILE = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\dev-torrents.db"
+
 TORRENT_DIRECTORY = "F:\\test-area\\dev\\monitor"
 DOWNLOAD_DIRECTORY = "F:\\test-area\\dev\\downloading"
 COMPLETE_DIRECTORY = "F:\\test-area\\dev\\complete"
 SEVEN_ZIP = "C:\\7zip\\7z.exe"
+
 PLEX_HOST = 'localhost:32400'
+PLEX_TV_SECTION = 2
+USE_PLEX = True
+
 EMAIL_DATA = {
     "TO": [str(os.environ.get('SEND_TO'))],
     "ACCOUNT": {
@@ -21,7 +26,6 @@ EMAIL_DATA = {
 }
 TORRENT_SHARE_TIME = 14
 FEED = ("http://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=" + str(os.environ.get('TOKEN')),)
-PLEX_TV_SECTION = 2
 
 
 def apply_settings(env='Dev'):
