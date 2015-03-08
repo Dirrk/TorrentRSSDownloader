@@ -6,23 +6,6 @@ import logging
 import re
 
 
-"""
- Subscription.py
- Subscription Object
-    Name
-    Regex include string
-    Regex exclude string
-    EpisodeMatch = true/false
-    Episodes: [
-        "S01E01",
-        "S01E02",
-        "S01E03",
-        "S01E04",
-        ]
-    }
-"""
-
-
 class Subscription:
     def __init__(self, id, name, feed_id, inopts={}):
         """

@@ -515,3 +515,11 @@ def verify_sql_change(cursor, get_one, should_equal, table_name, ret_object=Fals
     else:
         logging.error(reason)
     return False
+
+
+# http://stackoverflow.com/a/3300514
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
