@@ -522,13 +522,21 @@ def get_episodes(conn, id):
     return episodes
 
 
-def get_torrents(conn):
+def get_torrents(conn, get_finished=False):
     d = conn.cursor()
-    d.execute(
-        '''
-            SELECT link, status, subscriptionid, folder, file, final_location, status_time, episode FROM Torrents
-        '''
-    )
+    if get_finished is False:
+        d.execute(
+            '''
+                SELECT link, status, subscriptionid, folder, file, final_location, status_time, episode FROM Torrents
+                WHERE status != 7
+            '''
+        )
+    else:
+        d.execute(
+            '''
+                SELECT link, status, subscriptionid, folder, file, final_location, status_time, episode FROM Torrents
+            '''
+        )
     torrents = {}
     for tor in d.fetchall():
         a_torrent = Torrent(**tor)

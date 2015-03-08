@@ -6,6 +6,8 @@ import subprocess
 import time
 import math
 
+from app.rss.Item import parse_episode as episode_parser
+
 import requests
 from app.torrent.bencode import torrent_file_to_dictionary as infoParser
 import re
@@ -86,14 +88,24 @@ class Torrent:
         elif self.status == TORRENT_STATES["COMPLETE"] and self.status_time == 0:
             if os.path.exists(os.path.join(settings.COMPLETE_DIRECTORY, self.folder)) is True:
                 self.status_time = os.path.getmtime(os.path.join(settings.COMPLETE_DIRECTORY, self.folder))
-                return True
+                return False
             elif callback is not None and self.episode != '':
                 sub = callback('sub', self.subscriptionId)
-                if sub.plex_id > 0:
+                if sub is not None and sub.plex_id > 0:
                     plex_episode = PlexHelper.get_episode_by_string(sub.plex_id, self.episode)
                     if plex_episode is not None:
                         self.status_time = plex_episode.addedAt
-                        return True
+                        return False
+            elif callback is not None and self.episode == '':
+                episodes = episode_parser(self.file)
+                if len(episodes) > 0:
+                    sub = callback('sub', self.subscriptionId)
+                    if sub is not None and sub.plex_id > 0:
+                        plex_episode = PlexHelper.get_episode_by_string(sub.plex_id, episodes[-1])
+                        self.episode = episodes[-1]
+                        if plex_episode is not None:
+                            self.status_time = plex_episode.addedAt
+                        return False
 
         elif self.status == TORRENT_STATES["COMPLETE"] and self.status_time - math.ceil(time.time()) >= DAY_IN_SECONDS \
                 * settings.TORRENT_SHARE_TIME:

@@ -79,7 +79,7 @@ class TorrentService:
 
             for t_id in self.db.torrents:
                 torrent = self.db.torrents[t_id]
-                if torrent.check_status(self.db.get_subscription_by_id) is False:
+                if torrent.check_status(self.db.db_callback_by_id) is False:
                     logging.warn(torrent.to_string())
                     self.db.update_torrent(torrent)
 

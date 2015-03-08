@@ -275,9 +275,9 @@ class Season():
 class Episode():
     def __init__(self, kwargs):
         self.id = kwargs.get('ratingKey')
-        self.episodeNum = kwargs.get('index')
+        self.episodeNum = int(kwargs.get('index'))
         self.seasonNum = kwargs.get('parentIndex')
-        self.addedAt = kwargs.get('addedAt')
+        self.addedAt = int(kwargs.get('addedAt'))
         self.videos = []
 
     def get_videos(self):
