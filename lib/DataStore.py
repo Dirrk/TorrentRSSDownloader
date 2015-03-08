@@ -91,7 +91,8 @@ class DataStore():
                     folder TEXT NOT NULL PRIMARY KEY,
                     file TEXT,
                     final_location TEXT,
-                    status_time INTEGER DEFAULT '0'
+                    status_time INTEGER DEFAULT '0',
+                    episode TEXT DEFAULT ''
                 );
                 '''
             )
@@ -295,6 +296,9 @@ class DataStore():
                 # Rename Temporary Table to Settings
                 c.execute("ALTER TABLE SubscriptionsBak RENAME TO Subscriptions")
 
+                # Alter Torrents Table
+                c.execute("ALTER TABLE Torrents ADD COLUMN episode TEXT DEFAULT ''")
+
                 conn.commit()
 
             else:
@@ -397,9 +401,10 @@ class DataStore():
         c = conn.cursor()
         c.execute(
             '''
-              INSERT INTO Torrents(link,status,subscriptionid,file,folder,final_location,status_time) VALUES (?,?,?,?,?,
-              ?,?)
-            ''', (tor.link, tor.status, tor.subscriptionId, tor.file, tor.folder, tor.final_location, tor.status_time)
+              INSERT INTO Torrents(link,status,subscriptionid,file,folder,final_location,status_time, episode) VALUES (
+              ?,?,?,?,?,?,?,?)
+            ''', (tor.link, tor.status, tor.subscriptionId, tor.file, tor.folder, tor.final_location, tor.status_time,
+                  tor.episode)
         )
         conn.commit()
         conn.close()
@@ -411,9 +416,10 @@ class DataStore():
         c = conn.cursor()
         c.execute(
             '''
-              UPDATE Torrents SET link=?, status=?, subscriptionid=?,file=?, final_location=?, status_time=?
+              UPDATE Torrents SET link=?, status=?, subscriptionid=?,file=?, final_location=?, status_time=?, episode=?
               WHERE folder=?
-            ''', (tor.link, tor.status, tor.subscriptionId, tor.file, tor.final_location, tor.status_time, tor.folder)
+            ''', (tor.link, tor.status, tor.subscriptionId, tor.file, tor.final_location, tor.status_time, tor.episode,
+                  tor.folder)
         )
         conn.commit()
         conn.close()
@@ -425,6 +431,12 @@ class DataStore():
         subscriptions = get_subscriptions(conn, True)
         conn.close()
         return subscriptions
+
+    def db_callback_by_id(self, store, id):
+        if store == 'sub':
+            return self.subscriptions['Subscription-' + str(id)]
+        elif store == 'feed':
+            return self.feeds['Feed-' + str(id)]
 
 
 def get_settings_value(conn, key, a_type=int):
@@ -514,7 +526,7 @@ def get_torrents(conn):
     d = conn.cursor()
     d.execute(
         '''
-            SELECT link, status, subscriptionid, folder, file, final_location, status_time FROM Torrents
+            SELECT link, status, subscriptionid, folder, file, final_location, status_time, episode FROM Torrents
         '''
     )
     torrents = {}

@@ -153,6 +153,35 @@ class PlexHelper():
         return ret_value
 
     @staticmethod
+    def get_episode_by_string(show_id, ep_string):
+
+        se = season_str_to_num(ep_string)
+
+        if se is None:
+            return None
+
+        api = ApiHelper()
+
+        seasons = api.get_seasons(show_id)
+        if seasons is None or len(seasons) == 0:
+            return None
+
+        found_season = None
+
+        for season in seasons:
+            if season.seasonNum == se.get('season'):
+                found_season = season
+
+        if found_season is None:
+            return None
+        else:
+            found_season.episodes = api.get_season_episodes(found_season.id)
+            for eps in found_season.episodes:
+                if eps.episodeNum == se.get('episode'):
+                    return eps
+        return None
+
+    @staticmethod
     def recursive_inflate(plex_object):
 
         if isinstance(plex_object, Show):
@@ -248,6 +277,7 @@ class Episode():
         self.id = kwargs.get('ratingKey')
         self.episodeNum = kwargs.get('index')
         self.seasonNum = kwargs.get('parentIndex')
+        self.addedAt = kwargs.get('addedAt')
         self.videos = []
 
     def get_videos(self):

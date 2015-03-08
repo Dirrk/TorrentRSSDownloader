@@ -11,6 +11,7 @@ from app.torrent.bencode import torrent_file_to_dictionary as infoParser
 import re
 import os
 import app.settings as settings
+from app.plex.plex import PlexHelper
 
 
 logging.getLogger('requests').setLevel(logging.WARNING)
@@ -18,13 +19,15 @@ DAY_IN_SECONDS = 86400
 
 
 class Torrent:
-    def __init__(self, link, status=0, file=None, folder="", subscriptionid=0, final_location=None, status_time=None):
+    def __init__(self, link, status=0, file=None, folder="", subscriptionid=0, final_location=None, status_time=None,
+                 episode=''):
         self.link = link
         self.status = status  # 0 - Nothing, 1 - Downloaded torrent file, 2 - Downloading, 3 - Download complete, 4 - organized 5 - failed
         self.file = file
         self.folder = folder  # Folder that files will be contained in
         self.subscriptionId = subscriptionid  # Local Subscription Id
         self.final_location = final_location  # Location we are going to move the file to
+        self.episode = episode  # the episode that was found
 
         if status_time is None or status_time == 0:
             self.status_time = math.ceil(time.time())
@@ -60,7 +63,7 @@ class Torrent:
             self.status = TORRENT_STATES["ERROR"]
             return False
 
-    def check_status(self):
+    def check_status(self, callback=None):
 
         changed = (self.status + 0)  # Not needed but I do it
 
@@ -79,6 +82,18 @@ class Torrent:
 
         if self.status == TORRENT_STATES["DOWNLOADED"]:
             self._organize()
+
+        elif self.status == TORRENT_STATES["COMPLETE"] and self.status_time == 0:
+            if os.path.exists(os.path.join(settings.COMPLETE_DIRECTORY, self.folder)) is True:
+                self.status_time = os.path.getmtime(os.path.join(settings.COMPLETE_DIRECTORY, self.folder))
+                return True
+            elif callback is not None and self.episode != '':
+                sub = callback('sub', self.subscriptionId)
+                if sub.plex_id > 0:
+                    plex_episode = PlexHelper.get_episode_by_string(sub.plex_id, self.episode)
+                    if plex_episode is not None:
+                        self.status_time = plex_episode.addedAt
+                        return True
 
         elif self.status == TORRENT_STATES["COMPLETE"] and self.status_time - math.ceil(time.time()) >= DAY_IN_SECONDS \
                 * settings.TORRENT_SHARE_TIME:

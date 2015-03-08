@@ -79,7 +79,7 @@ class TorrentService:
 
             for t_id in self.db.torrents:
                 torrent = self.db.torrents[t_id]
-                if torrent.check_status() is False:
+                if torrent.check_status(self.db.get_subscription_by_id) is False:
                     logging.warn(torrent.to_string())
                     self.db.update_torrent(torrent)
 
@@ -105,6 +105,7 @@ class TorrentService:
 
                 a_torrent = Torrent(match.link)
                 a_torrent.subscriptionId = sub.id
+                a_torrent.episode = match.episodes[0]
                 if settings.USE_PLEX is True:
                     a_torrent.final_location = plex.PlexHelper.find_location(sub.plex_id,
                                                                              match.episodes[0])
