@@ -7,7 +7,6 @@ import time
 import math
 
 from app.rss.Item import parse_episode as episode_parser
-
 import requests
 from app.torrent.bencode import torrent_file_to_dictionary as infoParser
 import re
@@ -87,7 +86,7 @@ class Torrent:
 
         elif self.status == TORRENT_STATES["COMPLETE"] and self.status_time == 0:
             if os.path.exists(os.path.join(settings.COMPLETE_DIRECTORY, self.folder)) is True:
-                self.status_time = os.path.getmtime(os.path.join(settings.COMPLETE_DIRECTORY, self.folder))
+                self.status_time = math.ceil(os.path.getmtime(os.path.join(settings.COMPLETE_DIRECTORY, self.folder)))
                 return False
             elif callback is not None and self.episode != '':
                 sub = callback('sub', self.subscriptionId)
