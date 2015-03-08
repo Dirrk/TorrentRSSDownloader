@@ -77,29 +77,7 @@ class TorrentService:
             for feed_id in self.db.feeds:
 
                 feed = self.db.feeds[feed_id]
-                if feed.update_cycle() is True:
-                    items = feed.fetch_items()
-
-                    for key in self.db.subscriptions:
-                        sub = self.db.subscriptions[key]
-                        if sub.feedId == feed.id:
-                            matched = sub.match(items)
-                            if matched is not None and len(matched) > 0:
-                                for match in matched:
-                                    logging.debug("Found matches:" + str(match.title))
-
-                                    a_torrent = Torrent(match.link)
-                                    a_torrent.subscriptionId = sub.id
-                                    if settings.USE_PLEX is True:
-                                        a_torrent.final_location = plex.PlexHelper.find_location(sub.plex_id,
-                                                                                                 match.episodes[0])
-                                    if a_torrent.download() is True:
-                                        self.db.add_torrent(a_torrent)
-                                    else:
-                                        logging.error("Torrent failed to download")
-
-                            self.db.update_subscription(sub)
-                    self.db.update_feed(feed)
+                self._loop_feed(feed)
 
             for t_id in self.db.torrents:
                 torrent = self.db.torrents[t_id]
@@ -108,6 +86,37 @@ class TorrentService:
                     self.db.update_torrent(torrent)
 
             time.sleep(15)
+
+    def _loop_feed(self, feed):
+
+        if feed.update_cycle() is True:
+            items = feed.fetch_items()
+
+            for key in self.db.subscriptions:
+                sub = self.db.subscriptions[key]
+                if sub.feedId == feed.id:
+                    self._loop_subs(sub, items)
+            self.db.update_feed(feed)
+
+    def _loop_subs(self, sub, items=[]):
+
+        matched = sub.match(items)
+        if matched is not None and len(matched) > 0:
+            for match in matched:
+                logging.info("Found matches:" + str(match.title))
+
+                a_torrent = Torrent(match.link)
+                a_torrent.subscriptionId = sub.id
+                if settings.USE_PLEX is True:
+                    a_torrent.final_location = plex.PlexHelper.find_location(sub.plex_id,
+                                                                             match.episodes[0])
+                if a_torrent.download() is True:
+                    logging.info("Downloaded torrent successfully")
+                    self.db.add_torrent(a_torrent)
+                else:
+                    logging.error("Torrent failed to download")
+
+        self.db.update_subscription(sub)
 
 
 def create_folder(folder, attempts=None):
