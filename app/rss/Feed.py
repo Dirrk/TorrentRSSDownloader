@@ -7,6 +7,9 @@ import requests
 from app.rss.Item import Item
 
 
+logging.getLogger("requests").setLevel(logging.WARNING)
+
+
 class Feed:
     def __init__(self, id, url, name="new feed", frequency=300):
         """
@@ -31,7 +34,8 @@ class Feed:
         :return: Array of Items
         """
         items = []
-        logging.debug("Feed " + self.name + " is retrieving list")
+
+        logging.info("Feed " + self.name + " is retrieving list")
 
         try:
             # Download from url

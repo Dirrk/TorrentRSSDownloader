@@ -28,7 +28,7 @@ class DataStore():
     def create(self):
 
         if not path.isfile(self.__db_file__):
-            logging.info("Creating db")
+            logging.info("Creating db " + self.__db_file__)
             conn = sqlite3.connect(self.__db_file__)
             c = conn.cursor()
 
@@ -96,7 +96,7 @@ class DataStore():
             conn.close()
 
         else:
-            print "Upgrading"
+            logging.info("Performing Upgrade on db file " + self.__db_file__)
             return self.upgrade(__DB_VERSION__)
 
     def load(self):

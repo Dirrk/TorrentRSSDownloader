@@ -7,16 +7,24 @@ import logging
 import app.settings as settings
 from app.TorrentDownloadService import TorrentService
 
-__version__ = '1.1.0'
+
+__version__ = '1.1.1'
 
 
 # https://docs.python.org/2/library/logging.html#levels
 def main(args):
     parser = argparse.ArgumentParser(description="Monitors RSS Feeds and downloads torrents")
-    parser.add_argument('-c', '--config', nargs='?', type=str, default="./config.json",
-                        help="location of the config to use")
+    parser.add_argument('-d', '--database', type=str, default=settings.DATA_FILE,
+                        help="location of the database to use")
+    parser.add_argument('-e', '--env', default='', type=str, choices=['Dev', 'Stage', 'Production'])
+
     # Parse config from arguments
-    config_file = parser.parse_args(args).config
+    my_args = parser.parse_args(args)
+    db_file = my_args.database
+    env = my_args.env
+
+    settings.apply_settings(env)
+    settings.DATA_FILE = db_file
 
     # Setup Logging
     root = logging.getLogger()
@@ -32,8 +40,6 @@ def main(args):
 
     # Add the stream handler to the root logger
     root.addHandler(ch)
-
-    root.info("Starting application with config %s", config_file)
 
     # Start application
     TorrentService().start()

@@ -24,18 +24,24 @@ FEED = ("http://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603
 PLEX_TV_SECTION = 2
 
 
-if __ENV__ == 'Production':
-    LOG_LEVEL = 20
-    DATA_FILE = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\torrents.db"
-    TORRENT_DIRECTORY = "F:\\Incoming\\monitor"
-    DOWNLOAD_DIRECTORY = "F:\\Incoming"
-    COMPLETE_DIRECTORY = "Z:\\Completed"
+def apply_settings(env='Dev'):
+    global LOG_LEVEL, DATA_FILE, TORRENT_DIRECTORY, DOWNLOAD_DIRECTORY, COMPLETE_DIRECTORY
 
-    print "Production"
+    if env == 'Production':
+        LOG_LEVEL = 20
+        DATA_FILE = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\torrents.db"
+        TORRENT_DIRECTORY = "F:\\Incoming\\monitor"
+        DOWNLOAD_DIRECTORY = "F:\\Incoming"
+        COMPLETE_DIRECTORY = "Z:\\Completed"
 
-elif __ENV__ == 'Stage':
-    DATA_FILE = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\stage-torrents.db"
-    TORRENT_DIRECTORY = "F:\\test-area\\stage\\monitor"
-    DOWNLOAD_DIRECTORY = "F:\\test-area\\stage\\downloading"
-    COMPLETE_DIRECTORY = "F:\\test-area\\stage\\complete"
-    print "Stage"
+        print "Production"
+
+    elif env == 'Stage':
+        DATA_FILE = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\stage-torrents.db"
+        TORRENT_DIRECTORY = "F:\\test-area\\stage\\monitor"
+        DOWNLOAD_DIRECTORY = "F:\\test-area\\stage\\downloading"
+        COMPLETE_DIRECTORY = "F:\\test-area\\stage\\complete"
+        print "Stage"
+
+
+apply_settings(__ENV__)

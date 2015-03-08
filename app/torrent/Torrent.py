@@ -13,6 +13,7 @@ import os
 import app.settings as settings
 
 
+logging.getLogger('requests').setLevel(logging.WARNING)
 DAY_IN_SECONDS = 86400
 
 
