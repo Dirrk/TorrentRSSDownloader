@@ -18,14 +18,18 @@ DAY_IN_SECONDS = 86400
 
 
 class Torrent:
-    def __init__(self, link, status=0, file=None, folder="", subscription_id=0):
+    def __init__(self, link, status=0, file=None, folder="", subscriptionid=0, final_location=None, status_time=None):
         self.link = link
         self.status = status  # 0 - Nothing, 1 - Downloaded torrent file, 2 - Downloading, 3 - Download complete, 4 - organized 5 - failed
         self.file = file
         self.folder = folder  # Folder that files will be contained in
-        self.subscriptionId = subscription_id  # Local Subscription Id
-        self.final_location = None  # Location we are going to move the file to
-        self.status_time = math.ceil(time.time())
+        self.subscriptionId = subscriptionid  # Local Subscription Id
+        self.final_location = final_location  # Location we are going to move the file to
+
+        if status_time is None or status_time == 0:
+            self.status_time = math.ceil(time.time())
+        else:
+            self.status_time = status_time
 
         if self.file is None:
             my_file = re.split('/', self.link)

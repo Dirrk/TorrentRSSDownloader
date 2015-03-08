@@ -485,8 +485,6 @@ def get_subscriptions(conn, all_subs=False):
 
         new_sub = Subscription(**sub)
 
-        # new_sub.plex_id = int(sub[3])
-
         subscriptions['Subscription-' + str(sub['id'])] = new_sub
 
         episodes = get_episodes(conn, new_sub.id)
@@ -515,14 +513,14 @@ def get_torrents(conn):
     d = conn.cursor()
     d.execute(
         '''
-            SELECT link, status, subscriptionid, folder, file, final_location, status_time FROM Torrents WHERE status < 4
+            SELECT link, status, subscriptionid, folder, file, final_location, status_time FROM Torrents
         '''
     )
     torrents = {}
     for tor in d.fetchall():
         a_torrent = Torrent(**tor)
         a_torrent.final_location = tor['final_location']
-        a_torrent.status_time = int('status_time')
+        a_torrent.status_time = int(tor['status_time'])
         torrents[a_torrent.folder] = a_torrent
 
     return torrents

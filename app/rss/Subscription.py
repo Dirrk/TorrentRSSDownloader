@@ -104,7 +104,7 @@ class Subscription:
                 if key != "__NO__EPISODE__":
                     self.episodes.append(key)
 
-        if len(return_matches) > 0 and self.match_type == 'onlyOnce':
+        if len(return_matches) > 0 and self.match_type == 'once':
             self.enabled = 0
 
         return return_matches
