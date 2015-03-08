@@ -1,13 +1,12 @@
 __author__ = 'Dirrk'
 
 import logging
+import time
+import shutil
 
-log = logging.getLogger()
 from lib.DataStore import DataStore
 import app.plex.plex as plex
 from app.torrent.Torrent import Torrent
-import time
-import shutil
 import os
 import app.settings as settings
 
@@ -22,8 +21,8 @@ class TorrentService:
         if os.name == 'nt' and os.path.exists(settings.SEVEN_ZIP) is False:
             raise Exception("7zip was not configured correctly please check your settings")
 
-        if create_folder(settings.TORRENT_DIRECTORY) is True and create_folder(settings.DOWNLOAD_DIRECTORY) is True and \
-                        create_folder(settings.COMPLETE_DIRECTORY) is True:
+        if create_folder(settings.TORRENT_DIRECTORY) is True and create_folder(
+                settings.DOWNLOAD_DIRECTORY) is True and create_folder(settings.COMPLETE_DIRECTORY) is True:
             self.db.create()
         else:
             raise Exception("Could not create torrent folders are they configured correctly?")
@@ -75,7 +74,6 @@ class TorrentService:
             self.db.reload()
 
             for feed_id in self.db.feeds:
-
                 feed = self.db.feeds[feed_id]
                 self._loop_feed(feed)
 
