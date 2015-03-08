@@ -111,10 +111,11 @@ class TestSubscriptionObject(unittest.TestCase):
         self.items.append(Item(
             '<item><title>Mountain Men S01E05 720p WEBRip H264-TURBO</title><link>https://iptorrents.com/download.php/1310224/Mountain.Men.S01E05.720p.WEBRip.H264-TURBO.torrent?torrent_pass=TOKEN</link><pubDate>Sat, 31 Jan 2015 17:50:06 +0000</pubDate><description>855 MB; TV/x264</description></item>'))
         self.sub = Subscription(1, "Test Mountain Men", 12345, {})
+
+    def test_a_run_first(self):
         self.assertEqual(self.sub.id, 1)
         self.assertEqual(self.sub.name, "Test Mountain Men")
-        self.assertEqual(self.sub.feedid, 12345)
-
+        self.assertEqual(self.sub.feedId, 12345)
 
     def test_episodes(self):
         self.assertEqual(self.sub.add_episode("S01E01"), 1)
@@ -134,30 +135,23 @@ class TestSubscriptionObject(unittest.TestCase):
         options['episode_match'] = inopts.episode_match if inopts.get('episode_match') is not None else False
         options['onlyOnce'] = inopts.onlyOnce if inopts.get('onlyOnce') is not None else False
         """
-        self.assertEqual(self.sub.__options__.get('reg_exclude'), "555DO-NOT-MATCH-THIS-REGEX-ESCAPE555")
-        self.assertFalse(self.sub.__options__.get('enabled'))
-        self.assertTrue(self.sub.__options__.get('episode_match'))
-        self.assertFalse(self.sub.__options__.get('onlyOnce'))
-        self.assertEqual(self.sub.__options__.get('waitTime'), 0)
-        self.assertEqual(self.sub.__options__.get('minSize'), 0)
-        self.assertEqual(self.sub.__options__.get('maxSize'), 1000000000)
-        self.assertEqual(self.sub.__options__.get('quality'), -1)
-        self.assertLess(self.sub.__options__.get('lastMatched'), time.time())
-
-        import json
-
-        print json.dumps(self.sub.__options__)
-
+        self.assertEqual(self.sub.reg_exclude, "555DO-NOT-MATCH-THIS-REGEX-ESCAPE555")
+        self.assertEqual(self.sub.enabled, 1)
+        self.assertEqual(self.sub.match_type, 'episode')
+        self.assertEqual(self.sub.min_size, 0)
+        self.assertEqual(self.sub.max_size, 1000000000)
+        self.assertEqual(self.sub.quality, -1)
+        self.assertLess(self.sub.last_matched, time.time())
 
     def test_match(self):
         """
         Todo
         :return:
         """
-        self.sub.set_option("enabled", True)
-        self.assertTrue(self.sub.__options__.get('enabled'))
-        self.sub.set_option("episode_match", True)
-        self.sub.set_option("reg_allow", "Mountain.Men*")
+        self.sub.enabled = 1
+        self.assertEqual(self.sub.enabled, 1)
+        self.sub.reg_allow = "Mountain.Men*"
+
         matches = self.sub.match(self.items)
         print "Matches object:", matches
         self.assertEqual(len(matches), 1)

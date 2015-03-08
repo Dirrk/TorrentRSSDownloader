@@ -421,6 +421,7 @@ class DataStore():
 
     def get_all_subscriptions(self):
         conn = sqlite3.connect(self.__db_file__)
+        conn.row_factory = dict_factory
         subscriptions = get_subscriptions(conn, True)
         conn.close()
         return subscriptions

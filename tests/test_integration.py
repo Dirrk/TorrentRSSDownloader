@@ -42,8 +42,8 @@ class TestIntegrationOfApp(unittest.TestCase):
             eps = plex.PlexHelper.get_se_array(show)
             for ep in eps:
                 a_show.add_episode(ep)
-            a_show.set_option("reg_allow", plex.PlexHelper.generate_regex(show))
-            a_show.set_option("episode_match", True)
+            a_show.reg_allow = plex.PlexHelper.generate_regex(show)
+            a_show.match_type = 'episode'
             a_show.enabled = 1
             a_show.plex_id = show.id
 
