@@ -8,7 +8,7 @@ import app.settings as settings
 from app.TorrentDownloadService import TorrentService
 
 
-__version__ = '1.1.2'
+__version__ = '1.2.0'
 
 
 # https://docs.python.org/2/library/logging.html#levels
