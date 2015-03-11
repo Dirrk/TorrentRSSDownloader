@@ -141,7 +141,7 @@ class Torrent:
             except Exception as e:
                 self.status = TORRENT_STATES["FATAL"]
                 logging.exception(e)
-                print "Torrent failed to move ", working_dir, "to", self.final_location
+                logging.error("Torrent failed to move ", working_dir, "to", self.final_location)
             finally:
                 return
 
@@ -176,12 +176,12 @@ class Torrent:
                 match_video = file
                 match_video_size = os.path.getsize(file)
 
-        print "Match Archive:", match_archive
-        print "Match Videos:", match_video
+        logging.info("Match Archive:" + str(match_archive))
+        logging.info("Match Videos:" + str(match_video))
 
         if match_archive is None:
             if match_video is None:
-                print "Couldn't find match"
+                logging.debug("Couldn't find match")
                 return
             shutil.copy(match_video, self.final_location)
             return
@@ -216,14 +216,13 @@ def extract_file(archive, dst):
                 os.mkdir(dst)
             # C:\7zip\7z.exe e -o"F:\test-area\dev\Plex_Area\Drive A\TV\Show ABC\S1" "F:\test-area\dev\complete\My.Favorite.Show.S01E02\Laggies.2014.LIMITED.720p.BRRiP.X264.Ac3.CrEwSaDe.Sample.zip.001"
             cmd = settings.SEVEN_ZIP, '-y', 'x', '-o' + dst, archive
-            print cmd
+            logging.info(str(cmd))
             try:
                 subprocess.check_call(cmd)
                 return True
             except subprocess.CalledProcessError as e:
-                print e
                 logging.exception(e)
-                print "Failed to extract file", archive
+                logging.error("Failed to extract file: " + archive)
                 return False
 
         else:

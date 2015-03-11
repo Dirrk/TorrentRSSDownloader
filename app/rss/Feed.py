@@ -54,12 +54,12 @@ class Feed:
                     temporary_item = Item(rss_item)
                     items.append(temporary_item)
                 except ValueError:
-                    print "Could not process an rss_item skipping"
+                    logging.error("Could not process an rss_item skipping")
         except ValueError as e:
-            print "Unable to retrieve rss data or failed parsing data"
+            logging.error("Unable to retrieve rss data or failed parsing data")
             logging.exception(e)
         except ET.ParseError as e:
-            print "ParseError with feed ", e.message
+            logging.error("ParseError with feed " + e.message)
             logging.exception(e)
 
         self.last_run = time.time()
