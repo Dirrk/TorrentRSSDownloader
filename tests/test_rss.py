@@ -10,6 +10,7 @@ from app.rss.Item import Item
 from app.rss.Subscription import Subscription
 import requests
 
+settings.apply_settings()
 
 """"
  Testing features / objects in this application

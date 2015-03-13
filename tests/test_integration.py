@@ -11,6 +11,7 @@ from app.rss.Item import Item
 from app.torrent.Torrent import Torrent
 import app.settings as settings
 
+settings.apply_settings()
 
 DB_FILE = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\integration_test_database.db"
 KEEP_FILE = False

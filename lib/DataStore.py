@@ -162,7 +162,7 @@ class DataStore():
 
             if reload_feeds:
                 self.feeds = get_feeds(conn)
-                # get_settings()
+                get_all_settings(conn)
 
             # Retrieve data
             self.subscriptions = get_subscriptions(conn)
@@ -688,3 +688,21 @@ def dict_factory(cursor, row):
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
     return d
+
+
+def get_all_settings(conn):
+    # Change on DB Updates
+    print "Getting all settings"
+    settings.TORRENT_DIRECTORY = get_settings_value(conn, 'TORRENT_DIRECTORY', str)
+    settings.DOWNLOAD_DIRECTORY = get_settings_value(conn, 'DOWNLOAD_DIRECTORY', str)
+    settings.COMPLETE_DIRECTORY = get_settings_value(conn, 'COMPLETE_DIRECTORY', str)
+    settings.SEVEN_ZIP = get_settings_value(conn, 'SEVEN_ZIP', str)
+    settings.PLEX_HOST = get_settings_value(conn, 'PLEX_HOST', str)
+    settings.PLEX_TV_SECTION = get_settings_value(conn, 'PLEX_TV_SECTION', str)
+    settings.USE_PLEX = get_settings_value(conn, 'USE_PLEX', str)
+    settings.EMAIL_DATA['TO'] = get_settings_value(conn, 'EMAIL_TO', str)
+    settings.EMAIL_DATA['FREQUENCY'] = get_settings_value(conn, 'EMAIL_FREQUENCY', str)
+    settings.EMAIL_DATA['ENABLED'] = get_settings_value(conn, 'EMAIL_ENABLED', str)
+    settings.EMAIL_DATA['ACCOUNT']['USER'] = get_settings_value(conn, 'EMAIL_ACCOUNT_USER', str)
+    settings.EMAIL_DATA['ACCOUNT']['PASS'] = get_settings_value(conn, 'EMAIL_ACCOUNT_PASS', str)
+    settings.CLEAN_UP_TORRENTS = get_settings_value(conn, 'CLEAN_UP_TORRENTS', str)

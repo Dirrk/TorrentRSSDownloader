@@ -210,3 +210,14 @@ class TestDataStoreVersion(unittest.TestCase):
         self.assertGreaterEqual(db.get_settings_value(conn, "Feeds", int), 1)
         self.assertIsNone(db.get_settings_value(conn, "SomeValueNotinSettings"))
         conn.close()
+
+    def test_get_all_settings(self):
+        import app.settings as settings
+
+        db_store = db.DataStore(db_folder + db_test_upgrade_files[-1]['file'])
+        self.assertEqual(settings.PLEX_HOST, 'localhost:32400')
+        db_store.create()
+        self.assertEqual(settings.PLEX_HOST, 'localhost:32400')
+        db_store.load()
+        self.assertEqual(settings.PLEX_HOST, 'localhost:32400')
+        self.assertEqual(db_store.get_setting('PLEX_HOST', str), 'localhost:32400')

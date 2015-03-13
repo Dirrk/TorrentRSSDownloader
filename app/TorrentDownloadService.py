@@ -3,6 +3,7 @@ __author__ = 'Dirrk'
 import logging
 import time
 import shutil
+import math
 
 from lib.DataStore import DataStore
 import app.plex.plex as plex
@@ -84,6 +85,13 @@ class TorrentService:
                     self.db.update_torrent(torrent)
 
             time.sleep(15)
+
+    def _loop_send_email(self):
+        current_ts = math.floor(time.time())
+        last_ts = self.db.get_setting('LAST_REPORT')
+        # TODO Complete this part for sending email
+        pass
+
 
     def _loop_feed(self, feed):
 

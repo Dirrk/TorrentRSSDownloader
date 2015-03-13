@@ -6,6 +6,7 @@ import app.torrent.bencode as bencode
 import os
 from app.torrent.Torrent import Torrent, TORRENT_STATES, extract_file
 
+
 DELETE_TEST_FILES = True
 
 
@@ -37,6 +38,9 @@ class TestBEncode(unittest.TestCase):
 class TestTorrent(unittest.TestCase):
     def setUp(self):
         self.longMessage = True
+        import app.settings as settings
+
+        settings.apply_settings()
         self.token = str(os.getenv('TOKEN'))
         self.a = Torrent(
             "https://iptorrents.com/download.php/1323172/Treehouse.Masters.S03E05.Lost.in.the.Forest.720p.HDTV.x264-DHD.torrent?torrent_pass=" + self.token)

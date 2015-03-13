@@ -49,5 +49,9 @@ def apply_settings(env='Dev'):
         COMPLETE_DIRECTORY = "F:\\test-area\\stage\\complete"
         print "Stage"
 
+    else:
+        TORRENT_DIRECTORY = "F:\\test-area\\dev\\monitor"
+        DOWNLOAD_DIRECTORY = "F:\\test-area\\dev\\downloading"
+        COMPLETE_DIRECTORY = "F:\\test-area\\dev\\complete"
 
 apply_settings(__ENV__)
