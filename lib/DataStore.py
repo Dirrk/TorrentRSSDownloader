@@ -96,21 +96,24 @@ class DataStore():
                 );
                 '''
             )
-            c.execute("INSERT INTO SETTINGS VALUES ('DB_VERSION', ?);", str(__DB_VERSION__))
+            c.execute("INSERT INTO SETTINGS VALUES ('DB_VERSION', ?);", (str(__DB_VERSION__),))
             c.execute("INSERT INTO SETTINGS VALUES ('MODIFIED', '1');")
-            c.execute("INSERT INTO SETTINGS VALUES ('TORRENT_DIRECTORY', ?);", settings.TORRENT_DIRECTORY)
-            c.execute("INSERT INTO SETTINGS VALUES ('DOWNLOAD_DIRECTORY', ?);", settings.DOWNLOAD_DIRECTORY)
-            c.execute("INSERT INTO SETTINGS VALUES ('COMPLETE_DIRECTORY', ?);", settings.COMPLETE_DIRECTORY)
-            c.execute("INSERT INTO SETTINGS VALUES ('SEVEN_ZIP', ?);", settings.SEVEN_ZIP)
-            c.execute("INSERT INTO SETTINGS VALUES ('PLEX_HOST', ?);", settings.PLEX_HOST)
-            c.execute("INSERT INTO SETTINGS VALUES ('PLEX_TV_SECTION', ?);", settings.PLEX_TV_SECTION)
-            c.execute("INSERT INTO SETTINGS VALUES ('USE_PLEX', ?);", settings.USE_PLEX)
-            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_TO', ?);", settings.EMAIL_DATA['TO'])
-            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ACCOUNT_USER', ?);", settings.EMAIL_DATA['ACCOUNT']['USER'])
-            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ACCOUNT_PASS', ?);", settings.EMAIL_DATA['ACCOUNT']['PASS'])
-            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_FREQUENCY', ?);", settings.EMAIL_DATA['FREQUENCY'])
-            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ENABLED', ?);", settings.EMAIL_DATA['ENABLED'])
-            c.execute("INSERT INTO SETTINGS VALUES ('CLEAN_UP_TORRENTS', ?);", settings.CLEAN_UP_TORRENTS)
+            c.execute("INSERT INTO SETTINGS VALUES ('TORRENT_DIRECTORY', ?);", (str(settings.TORRENT_DIRECTORY),))
+            c.execute("INSERT INTO SETTINGS VALUES ('DOWNLOAD_DIRECTORY', ?);", (str(settings.DOWNLOAD_DIRECTORY),))
+            c.execute("INSERT INTO SETTINGS VALUES ('COMPLETE_DIRECTORY', ?);", (str(settings.COMPLETE_DIRECTORY),))
+            c.execute("INSERT INTO SETTINGS VALUES ('SEVEN_ZIP', ?);", (str(settings.SEVEN_ZIP),))
+            c.execute("INSERT INTO SETTINGS VALUES ('PLEX_HOST', ?);", (str(settings.PLEX_HOST),))
+            c.execute("INSERT INTO SETTINGS VALUES ('PLEX_TV_SECTION', ?);", (str(settings.PLEX_TV_SECTION),))
+            c.execute("INSERT INTO SETTINGS VALUES ('USE_PLEX', ?);", (str(settings.USE_PLEX),))
+            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_TO', ?);", (str(settings.EMAIL_DATA['TO']),))
+            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ACCOUNT_USER', ?);",
+                      (str(settings.EMAIL_DATA['ACCOUNT']['USER']),))
+            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ACCOUNT_PASS', ?);",
+                      (str(settings.EMAIL_DATA['ACCOUNT']['PASS']),))
+            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_FREQUENCY', ?);", (str(settings.EMAIL_DATA['FREQUENCY']),))
+            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ENABLED', ?);", (str(settings.EMAIL_DATA['ENABLED']),))
+            c.execute("INSERT INTO SETTINGS VALUES ('CLEAN_UP_TORRENTS', ?);", (str(settings.CLEAN_UP_TORRENTS),))
+
             conn.commit()
             self.modified = 1
             self.db_version = __DB_VERSION__
@@ -159,11 +162,12 @@ class DataStore():
 
             if reload_feeds:
                 self.feeds = get_feeds(conn)
+                # get_settings()
 
             # Retrieve data
             self.subscriptions = get_subscriptions(conn)
             self.torrents = get_torrents(conn)
-            self.modified = get_settings_value(conn, "Feeds", int)
+            self.modified = get_settings_value(conn, "MODIFIED", int)
 
             conn.close()
             return reload_feeds
@@ -315,22 +319,26 @@ class DataStore():
                 conn.commit()
             elif current_version == 4:
                 c.execute("DELETE FROM Settings WHERE id='Feeds'")
+                c.execute("DELETE FROM Settings WHERE id='MODIFIED'")
                 c.execute("INSERT INTO SETTINGS VALUES ('MODIFIED', '1');")
-                c.execute("INSERT INTO SETTINGS VALUES ('TORRENT_DIRECTORY', ?);", settings.TORRENT_DIRECTORY)
-                c.execute("INSERT INTO SETTINGS VALUES ('DOWNLOAD_DIRECTORY', ?);", settings.DOWNLOAD_DIRECTORY)
-                c.execute("INSERT INTO SETTINGS VALUES ('COMPLETE_DIRECTORY', ?);", settings.COMPLETE_DIRECTORY)
-                c.execute("INSERT INTO SETTINGS VALUES ('SEVEN_ZIP', ?);", settings.SEVEN_ZIP)
-                c.execute("INSERT INTO SETTINGS VALUES ('PLEX_HOST', ?);", settings.PLEX_HOST)
-                c.execute("INSERT INTO SETTINGS VALUES ('PLEX_TV_SECTION', ?);", settings.PLEX_TV_SECTION)
-                c.execute("INSERT INTO SETTINGS VALUES ('USE_PLEX', ?);", settings.USE_PLEX)
-                c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_TO', ?);", settings.EMAIL_DATA['TO'])
+                c.execute("INSERT INTO SETTINGS VALUES ('TORRENT_DIRECTORY', ?);", (str(settings.TORRENT_DIRECTORY),))
+                c.execute("INSERT INTO SETTINGS VALUES ('DOWNLOAD_DIRECTORY', ?);", (str(settings.DOWNLOAD_DIRECTORY),))
+                c.execute("INSERT INTO SETTINGS VALUES ('COMPLETE_DIRECTORY', ?);", (str(settings.COMPLETE_DIRECTORY),))
+                c.execute("INSERT INTO SETTINGS VALUES ('SEVEN_ZIP', ?);", (str(settings.SEVEN_ZIP),))
+                c.execute("INSERT INTO SETTINGS VALUES ('PLEX_HOST', ?);", (str(settings.PLEX_HOST),))
+                c.execute("INSERT INTO SETTINGS VALUES ('PLEX_TV_SECTION', ?);", (str(settings.PLEX_TV_SECTION),))
+                c.execute("INSERT INTO SETTINGS VALUES ('USE_PLEX', ?);", (str(settings.USE_PLEX),))
+                c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_TO', ?);", (str(settings.EMAIL_DATA['TO']),))
                 c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ACCOUNT_USER', ?);",
-                          settings.EMAIL_DATA['ACCOUNT']['USER'])
+                          (str(settings.EMAIL_DATA['ACCOUNT']['USER']),))
                 c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ACCOUNT_PASS', ?);",
-                          settings.EMAIL_DATA['ACCOUNT']['PASS'])
-                c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_FREQUENCY', ?);", settings.EMAIL_DATA['FREQUENCY'])
-                c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ENABLED', ?);", settings.EMAIL_DATA['ENABLED'])
-                c.execute("INSERT INTO SETTINGS VALUES ('CLEAN_UP_TORRENTS', ?);", settings.CLEAN_UP_TORRENTS)
+                          (str(settings.EMAIL_DATA['ACCOUNT']['PASS']),))
+                c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_FREQUENCY', ?);",
+                          (str(settings.EMAIL_DATA['FREQUENCY']),))
+                c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ENABLED', ?);", (str(settings.EMAIL_DATA['ENABLED']),))
+                c.execute("INSERT INTO SETTINGS VALUES ('CLEAN_UP_TORRENTS', ?);", (str(settings.CLEAN_UP_TORRENTS),))
+                c.execute("UPDATE Settings SET val = 5 WHERE id = 'DB_VERSION'")
+                conn.commit()
 
             else:
                 count += 1

@@ -15,7 +15,8 @@ db_test_upgrade_files = [
     {"original_file": "torrents-version-1.db", "file": "test-torrents-version-1.db", "Version": 1},
     {"original_file": "torrents-version-2.db", "file": "test-torrents-version-2.db", "Version": 2},
     {"original_file": "torrents-version-3.db", "file": "test-torrents-version-3.db", "Version": 3},
-    {"original_file": "torrents-version-4.db", "file": "test-torrents-version-4.db", "Version": 4}
+    {"original_file": "torrents-version-4.db", "file": "test-torrents-version-4.db", "Version": 4},
+    {"original_file": "torrents-version-5.db", "file": "test-torrents-version-5.db", "Version": 5}
 ]
 
 import lib.DataStore as db
@@ -56,7 +57,8 @@ class TestDataStoreObject(unittest.TestCase):
     def test_reload(self):
 
         # First load need to redo feeds
-        self.assertTrue(self.db_test.reload())
+        if KEEP_TEST_FILE is False:
+            self.assertTrue(self.db_test.reload())
 
         # Loaded no need to redo feeds
         self.assertFalse(self.db_test.reload())
@@ -205,7 +207,7 @@ class TestDataStoreVersion(unittest.TestCase):
             self.assertTrue(db_store.upgrade(3))
             self.assertEqual(db_store.db_version, 3)
 
-    def test_upgrade_to_3(self):
+    def test_upgrade_to_4(self):
         for tests in [test for test in db_test_upgrade_files if test['Version'] <= 4]:
             db_store = db.DataStore(db_folder + tests['file'])
             self.assertTrue(db_store.upgrade(4))
@@ -219,7 +221,7 @@ class TestDataStoreVersion(unittest.TestCase):
 
     def test_upgrade_to_fake_version(self):
         db_store = db.DataStore(db_folder + db_test_upgrade_files[0]['file'])
-        self.assertFalse(db_store.upgrade(5))
+        self.assertFalse(db_store.upgrade(db.__DB_VERSION__ + 1))
 
     def test_get_settings(self):
         import sqlite3

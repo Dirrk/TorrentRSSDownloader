@@ -7,7 +7,9 @@ from app.plex.plex import ApiHelper, PlexHelper, Show
 
 class TestApiHelper(unittest.TestCase):
     def setUp(self):
-        self.host = '192.168.137.1:32400'
+        import app.settings as settings
+
+        self.host = settings.PLEX_HOST
         self.longMessage = True
 
     def test_PlexObject(self):
