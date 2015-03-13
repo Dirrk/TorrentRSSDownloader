@@ -107,7 +107,7 @@ class Torrent:
                         return False
 
         elif self.status == TORRENT_STATES["COMPLETE"] and self.status_time - math.ceil(time.time()) >= DAY_IN_SECONDS \
-                * settings.TORRENT_SHARE_TIME:
+                * settings.CLEAN_UP_TORRENTS:
             self.status = TORRENT_STATES["FINISHED"]
 
         elif self.status == TORRENT_STATES["COMPLETE"] and not os.path.exists(
@@ -116,7 +116,7 @@ class Torrent:
 
         elif self.status == TORRENT_STATES["FATAL"] and ((not os.path.exists(
                 os.path.join(settings.COMPLETE_DIRECTORY, self.folder)) or self.status_time - math.ceil(time.time()) >=
-                DAY_IN_SECONDS * settings.TORRENT_SHARE_TIME)):
+                DAY_IN_SECONDS * settings.CLEAN_UP_TORRENTS)):
             self.status = TORRENT_STATES["FINISHED"]
 
         has_changed = (changed - self.status) == 0

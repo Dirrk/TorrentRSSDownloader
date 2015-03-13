@@ -22,9 +22,11 @@ EMAIL_DATA = {
         "USER": str(os.environ.get('EMAIL_ACCOUNT_USER')),
         "PASS": str(os.environ.get('EMAIL_ACCOUNT_PASS')),
     },
-    "FREQUENCY": 7
+    "FREQUENCY": 7,
+    "ENABLED": False
 }
 TORRENT_SHARE_TIME = 14
+CLEAN_UP_TORRENTS = TORRENT_SHARE_TIME
 FEED = ("http://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=" + str(os.environ.get('TOKEN')),)
 
 
