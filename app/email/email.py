@@ -9,7 +9,7 @@ def send_gmail(subject, html_message, **kwargs):
     account_pwd = kwargs.get('AccountPass', None)
     account_host = kwargs.get('AccountHost', 'smtp.gmail.com')
     account_port = kwargs.get("AccountPort", 587)
-    to = kwargs.get('to', [account_user])
+    to = [kwargs.get('to', account_user)]
 
     # Prepare actual message
     message = """\From: %s\nTo: %s\nSubject: %s\n\n%s

@@ -17,7 +17,7 @@ PLEX_TV_SECTION = 2
 USE_PLEX = True
 
 EMAIL_DATA = {
-    "TO": [str(os.environ.get('SEND_TO'))],
+    "TO": str(os.environ.get('SEND_TO')),
     "ACCOUNT": {
         "USER": str(os.environ.get('EMAIL_ACCOUNT_USER')),
         "PASS": str(os.environ.get('EMAIL_ACCOUNT_PASS')),
