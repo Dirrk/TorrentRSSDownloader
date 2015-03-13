@@ -11,7 +11,7 @@ from app.torrent.Torrent import Torrent
 import os.path as path
 
 
-__DB_VERSION__ = 4
+__DB_VERSION__ = 5
 
 
 class DataStore():
@@ -97,7 +97,7 @@ class DataStore():
                 '''
             )
             c.execute("INSERT INTO SETTINGS VALUES ('DB_VERSION', ?);", str(__DB_VERSION__))
-            c.execute("INSERT INTO SETTINGS VALUES ('Feeds', '1');")
+            c.execute("INSERT INTO SETTINGS VALUES ('MODIFIED', '1');")
             conn.commit()
             self.modified = 1
             self.db_version = __DB_VERSION__
@@ -142,7 +142,7 @@ class DataStore():
             conn = sqlite3.connect(self.__db_file__)
             conn.row_factory = dict_factory
 
-            reload_feeds = self.modified < get_settings_value(conn, "Feeds", int)
+            reload_feeds = self.modified < get_settings_value(conn, "MODIFIED", int)
 
             if reload_feeds:
                 self.feeds = get_feeds(conn)
