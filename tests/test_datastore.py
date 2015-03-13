@@ -43,12 +43,12 @@ class TestDataStoreObject(unittest.TestCase):
         self.assertGreater(self.db.modified, 0)
 
     def test_create(self):
-        self.assertEqual(self.db_test.modified, 1)
+        self.assertEqual(self.db_test.modified, 0)
         import sqlite3 as sql
 
         conn = sql.connect(db_test_file)
 
-        for a in conn.execute("SELECT * FROM SETTINGS WHERE id='Feeds'").fetchall():
+        for a in conn.execute("SELECT * FROM SETTINGS WHERE id='MODIFIED'").fetchall():
             self.assertGreater(int(a[1]), 0)
             print "Found: ", a
 
@@ -96,35 +96,15 @@ class TestDataStoreObject(unittest.TestCase):
         self.assertEqual(len(sub1.episodes), 2)
 
         print "Keys:", self.db_test.subscriptions
-        self.assertEqual(len(self.db_test.subscriptions.keys()), 4)
+        self.assertEqual(len(self.db_test.subscriptions.keys()), 5)
 
-    def update_feed(self):
-
-        self.assertTrue(self.db_test.reload())
-
-        feed = self.db_test.feeds['Feed-1']
-        self.assertEqual(feed.id, 1)
-        self.assertEqual(feed.last_pub, 0)
-
-        # Declare arbitrary number for new last_pub
-        new_pub = 100000
-        feed.last_pub = new_pub
-
-        # Changed local variable
-        self.assertEqual(feed.last_pub, new_pub)
-
-        # Which was a pointer to that feed
-        self.assertEqual(self.db_test.feeds['Feed-1'].last_pub, new_pub)
-
-        # Force loaded without saving should be back to 0
-        self.db_test.load()
-        self.assertEqual(self.db_test.feeds['Feed-1'].last_pub, 0)
-
-        # Manually change again then save it then load and prove
-        self.db_test.feeds['Feed-1'].last_pub = new_pub
-        self.db_test.update_feed(self.db_test.feeds['Feed-1'])
-        self.db_test.load()
-        self.assertEqual(self.db_test.feeds['Feed-1'].last_pub, new_pub)
+    def test_change_settings(self):
+        self.assertEqual(self.db_test.get_setting('DB_VERSION', int), self.db_test.db_version)
+        self.assertIsNone(self.db_test.get_setting('SOMEVALUE', str))
+        self.db_test.set_setting('SOMEOTHERVALUE', 'test_string')
+        self.assertEqual(self.db_test.get_setting('SOMEOTHERVALUE', str), 'test_string')
+        self.db_test.set_setting('SOMEOTHERVALUE', 1)
+        self.assertEqual(self.db_test.get_setting('SOMEOTHERVALUE', int), 1)
 
     @classmethod
     def setUpClass(cls):

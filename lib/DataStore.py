@@ -354,6 +354,19 @@ class DataStore():
         else:
             return True
 
+    def get_setting(self, key, type_value):
+        conn = sqlite3.connect(self.__db_file__)
+        return get_settings_value(conn, key, type_value)
+
+    def set_setting(self, id, val):
+        conn = sqlite3.connect(self.__db_file__)
+        try:
+            insert_or_update_value(conn, id, val)
+        except Exception as e:
+            print e
+            logging.exception(e)
+        conn.close()
+
     # Called after a subscription has been matched which is the only time anything could change
     def update_subscription(self, sub):
 
@@ -477,8 +490,25 @@ class DataStore():
         elif store == 'feed':
             return self.feeds['Feed-' + str(id)]
 
+    def get_all_torrents(self, since_last_update=0):
+        conn = sqlite3.connect(self.__db_file__)
+        conn.row_factory = dict_factory
+        torrents = get_torrents(conn, True, since_last_update)
+        conn.close()
+        return torrents
 
-def get_settings_value(conn, key, a_type=int):
+
+def insert_or_update_value(conn, id, value):
+    val = get_settings_value(conn, id)
+    c = conn.cursor()
+    if val is not None:
+        c.execute("UPDATE Settings SET val=? WHERE id=?", (str(value), str(id)))
+    else:
+        c.execute("INSERT INTO Settings VALUES (?, ?)", (str(id), str(value)))
+    conn.commit()
+
+
+def get_settings_value(conn, key, a_type=str):
     conn.row_factory = dict_factory
     c = conn.cursor()
 
@@ -491,7 +521,8 @@ def get_settings_value(conn, key, a_type=int):
             return None
         else:
             return a_type(db_mod)
-    except:
+    except Exception as e:
+        print e
         return None
 
 
@@ -561,20 +592,21 @@ def get_episodes(conn, id):
     return episodes
 
 
-def get_torrents(conn, get_finished=False):
+def get_torrents(conn, get_finished=False, status_since=0):
     d = conn.cursor()
     if get_finished is False:
         d.execute(
             '''
                 SELECT link, status, subscriptionid, folder, file, final_location, status_time, episode FROM Torrents
-                WHERE status != 7
-            '''
+                WHERE status != 7 AND status_time > ?
+            ''', (status_since,)
         )
     else:
         d.execute(
             '''
                 SELECT link, status, subscriptionid, folder, file, final_location, status_time, episode FROM Torrents
-            '''
+                WHERE status_time > ?
+            ''', (status_since,)
         )
     torrents = {}
     for tor in d.fetchall():
