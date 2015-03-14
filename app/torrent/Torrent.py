@@ -192,9 +192,10 @@ class Torrent:
             self.status = TORRENT_STATES["COMPLETE"]
 
     def to_string(self):
-        my_status = [key for key in TORRENT_STATES if TORRENT_STATES[key] == self.status][0]
-        return "Torrent:", self.folder, "in status:", my_status
+        return "Torrent:", self.folder, "in status:", self.status_to_string()
 
+    def status_to_string(self):
+        return [key for key in TORRENT_STATES if TORRENT_STATES[key] == self.status][0]
 
 TORRENT_STATES = {
     "NEW": 0,

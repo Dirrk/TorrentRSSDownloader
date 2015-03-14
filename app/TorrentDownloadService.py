@@ -5,6 +5,7 @@ import time
 import shutil
 import math
 
+import app.email.email as email
 from lib.DataStore import DataStore
 import app.plex.plex as plex
 from app.torrent.Torrent import Torrent
@@ -84,14 +85,25 @@ class TorrentService:
                     logging.warn(torrent.to_string())
                     self.db.update_torrent(torrent)
 
+            self._loop_send_email()
             time.sleep(15)
 
     def _loop_send_email(self):
         current_ts = math.floor(time.time())
-        last_ts = self.db.get_setting('LAST_REPORT')
-        # TODO Complete this part for sending email
-        pass
+        last_ts = self.db.get_setting('LAST_REPORT', int)
+        email_frequency = self.db.get_setting('EMAIL_FREQUENCY', int)
+        if last_ts is None:
+            last_ts = 0
+            self.db.set_setting('LAST_REPORT', last_ts)
+        if email_frequency is None:
+            email_frequency = 3
+            self.db.set_setting('EMAIL_FREQUENCY', email_frequency)
 
+        email_frequency *= 86400
+
+        if current_ts - last_ts > email_frequency:
+            email.send_email_report(self.db.get_all_torrents(last_ts), self.db.db_callback_by_id)
+            self.db.set_setting('LAST_REPORT', current_ts)
 
     def _loop_feed(self, feed):
 
