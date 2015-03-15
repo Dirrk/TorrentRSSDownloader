@@ -598,14 +598,14 @@ def get_torrents(conn, get_finished=False, status_since=0):
         d.execute(
             '''
                 SELECT link, status, subscriptionid, folder, file, final_location, status_time, episode FROM Torrents
-                WHERE status != 7 AND status_time > ?
+                WHERE status != 7 AND status_time >= ?
             ''', (status_since,)
         )
     else:
         d.execute(
             '''
                 SELECT link, status, subscriptionid, folder, file, final_location, status_time, episode FROM Torrents
-                WHERE status_time > ?
+                WHERE status_time >= ?
             ''', (status_since,)
         )
     torrents = {}

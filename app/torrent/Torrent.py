@@ -86,7 +86,8 @@ class Torrent:
 
         elif self.status == TORRENT_STATES["COMPLETE"] and self.status_time == 0:
             if os.path.exists(os.path.join(settings.COMPLETE_DIRECTORY, self.folder)) is True:
-                self.status_time = math.ceil(os.path.getmtime(os.path.join(settings.COMPLETE_DIRECTORY, self.folder)))
+                self.status_time = int(
+                    math.ceil(os.path.getmtime(os.path.join(settings.COMPLETE_DIRECTORY, self.folder))))
                 return False
             elif callback is not None and self.episode != '':
                 sub = callback('sub', self.subscriptionId)
@@ -121,7 +122,7 @@ class Torrent:
 
         has_changed = (changed - self.status) == 0
         if has_changed is True:
-            self.status_time = math.ceil(time.time())
+            self.status_time = int(math.ceil(time.time()))
 
         return has_changed
 
