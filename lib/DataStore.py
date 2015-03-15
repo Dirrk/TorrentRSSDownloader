@@ -363,7 +363,7 @@ class DataStore():
         try:
             insert_or_update_value(conn, id, val)
         except Exception as e:
-            print e
+            print "Error setting the key:", id, "to", val
             logging.exception(e)
         conn.close()
 
