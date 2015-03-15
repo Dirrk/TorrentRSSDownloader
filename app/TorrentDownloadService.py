@@ -89,6 +89,9 @@ class TorrentService:
             time.sleep(15)
 
     def _loop_send_email(self):
+        # Accidentally merged into master before this was ready
+        if settings.EMAIL_DATA['ENABLED'] is not True:
+            return
         current_ts = math.floor(time.time())
         last_ts = self.db.get_setting('LAST_REPORT', int)
         email_frequency = self.db.get_setting('EMAIL_FREQUENCY', int)
