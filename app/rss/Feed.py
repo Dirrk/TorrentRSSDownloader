@@ -59,7 +59,7 @@ class Feed:
             logging.error("Unable to retrieve rss data or failed parsing data")
             logging.exception(e)
         except ET.ParseError as e:
-            logging.error("ParseError with feed " + e.message)
+            logging.error("ParseError with feed: " + self.url)
             logging.exception(e)
 
         self.last_run = time.time()
