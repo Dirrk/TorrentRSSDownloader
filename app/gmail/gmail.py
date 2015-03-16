@@ -2,6 +2,8 @@ __author__ = 'Dirrk'
 
 import logging
 import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 import app.plex.plex as plex
 import app.settings as settings
@@ -12,20 +14,23 @@ def send_gmail(subject, html_message, **kwargs):
     account_pwd = kwargs.get('AccountPass', None)
     account_host = kwargs.get('AccountHost', 'smtp.gmail.com')
     account_port = kwargs.get("AccountPort", 587)
-    to = [kwargs.get('to', account_user)]
+    to = kwargs.get('to', account_user)
 
-    # Prepare actual message
-    message = """\From: %s\nTo: %s\nSubject: %s\n\n%s
-            """ % (account_user, ", ".join(to), subject, html_message)
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = account_user
+    msg['To'] = to
+    msg.attach(MIMEText(html_message, 'html'))
+
     try:
 
         server = smtplib.SMTP(account_host, account_port)
         server.ehlo()
         server.starttls()
         server.login(account_user, account_pwd)
-        server.sendmail(account_user, to, message)
+        server.sendmail(account_user, to, msg.as_string())
         server.close()
-        logging.info('Sent email using gmail: ' + str(subject))
+        logging.info('Sent gmail using gmail: ' + str(subject))
         return True
     except Exception as e:
         logging.exception(e)

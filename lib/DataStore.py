@@ -363,7 +363,7 @@ class DataStore():
         try:
             insert_or_update_value(conn, id, val)
         except Exception as e:
-            print e
+            print "Error setting the key:", id, "to", val
             logging.exception(e)
         conn.close()
 
@@ -598,14 +598,14 @@ def get_torrents(conn, get_finished=False, status_since=0):
         d.execute(
             '''
                 SELECT link, status, subscriptionid, folder, file, final_location, status_time, episode FROM Torrents
-                WHERE status != 7 AND status_time > ?
+                WHERE status != 7 AND status_time >= ?
             ''', (status_since,)
         )
     else:
         d.execute(
             '''
                 SELECT link, status, subscriptionid, folder, file, final_location, status_time, episode FROM Torrents
-                WHERE status_time > ?
+                WHERE status_time >= ?
             ''', (status_since,)
         )
     torrents = {}
@@ -699,10 +699,10 @@ def get_all_settings(conn):
     settings.SEVEN_ZIP = get_settings_value(conn, 'SEVEN_ZIP', str)
     settings.PLEX_HOST = get_settings_value(conn, 'PLEX_HOST', str)
     settings.PLEX_TV_SECTION = get_settings_value(conn, 'PLEX_TV_SECTION', str)
-    settings.USE_PLEX = get_settings_value(conn, 'USE_PLEX', str)
+    settings.USE_PLEX = get_settings_value(conn, 'USE_PLEX', bool)
     settings.EMAIL_DATA['TO'] = get_settings_value(conn, 'EMAIL_TO', str)
-    settings.EMAIL_DATA['FREQUENCY'] = get_settings_value(conn, 'EMAIL_FREQUENCY', str)
-    settings.EMAIL_DATA['ENABLED'] = get_settings_value(conn, 'EMAIL_ENABLED', str)
+    settings.EMAIL_DATA['FREQUENCY'] = get_settings_value(conn, 'EMAIL_FREQUENCY', int)
+    settings.EMAIL_DATA['ENABLED'] = get_settings_value(conn, 'EMAIL_ENABLED', bool)
     settings.EMAIL_DATA['ACCOUNT']['USER'] = get_settings_value(conn, 'EMAIL_ACCOUNT_USER', str)
     settings.EMAIL_DATA['ACCOUNT']['PASS'] = get_settings_value(conn, 'EMAIL_ACCOUNT_PASS', str)
-    settings.CLEAN_UP_TORRENTS = get_settings_value(conn, 'CLEAN_UP_TORRENTS', str)
+    settings.CLEAN_UP_TORRENTS = get_settings_value(conn, 'CLEAN_UP_TORRENTS', int)
