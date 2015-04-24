@@ -155,6 +155,9 @@ class Torrent:
 
         # Handle where there is just one large file
         if len(files) == 1:
+            if not os.path.exists(self.final_location):
+                os.mkdir(self.final_location)
+
             shutil.copy(files[0], self.final_location)
             return
 
