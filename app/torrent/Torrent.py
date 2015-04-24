@@ -187,6 +187,9 @@ class Torrent:
             if match_video is None:
                 logging.debug("Couldn't find match")
                 return
+            if not os.path.exists(self.final_location):
+                os.mkdir(self.final_location)
+
             shutil.copy(match_video, self.final_location)
             return
 
