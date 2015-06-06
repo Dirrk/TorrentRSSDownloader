@@ -217,7 +217,7 @@ class PlexHelper():
         ret_subs = []
         round_1_subs = []
         for sub in subs_not_in_plex:
-            rex = re.compile(sub.get_option('reg_allow'), re.IGNORECASE)
+            rex = re.compile(sub.reg_allow, re.IGNORECASE)
             found_show = -1
             for show in shows_not_in_subs:
                 if rex.search(show.title) is not None:

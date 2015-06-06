@@ -28,10 +28,10 @@ EMAIL_DATA = {
 TORRENT_SHARE_TIME = 14
 CLEAN_UP_TORRENTS = TORRENT_SHARE_TIME
 FEED = ("http://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=" + str(os.environ.get('TOKEN')),)
-
+ENV = __ENV__
 
 def apply_settings(env='Dev'):
-    global LOG_LEVEL, DATA_FILE, TORRENT_DIRECTORY, DOWNLOAD_DIRECTORY, COMPLETE_DIRECTORY
+    global LOG_LEVEL, DATA_FILE, TORRENT_DIRECTORY, DOWNLOAD_DIRECTORY, COMPLETE_DIRECTORY, ENV
 
     if env == 'Production':
         LOG_LEVEL = 20
@@ -39,19 +39,21 @@ def apply_settings(env='Dev'):
         TORRENT_DIRECTORY = "F:\\Incoming\\monitor"
         DOWNLOAD_DIRECTORY = "F:\\Incoming"
         COMPLETE_DIRECTORY = "Z:\\Completed"
-
-        print "Production"
+        return "Production"
 
     elif env == 'Stage':
         DATA_FILE = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\stage-torrents.db"
         TORRENT_DIRECTORY = "F:\\test-area\\stage\\monitor"
         DOWNLOAD_DIRECTORY = "F:\\test-area\\stage\\downloading"
         COMPLETE_DIRECTORY = "F:\\test-area\\stage\\complete"
-        print "Stage"
+        return "Stage"
 
     else:
         TORRENT_DIRECTORY = "F:\\test-area\\dev\\monitor"
         DOWNLOAD_DIRECTORY = "F:\\test-area\\dev\\downloading"
         COMPLETE_DIRECTORY = "F:\\test-area\\dev\\complete"
+        return "Dev"
+
+    ENV = env
 
 apply_settings(__ENV__)

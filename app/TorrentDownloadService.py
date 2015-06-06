@@ -40,7 +40,7 @@ class TorrentService:
                              + self.db.__db_file__ + '.bak')
 
     def start(self):
-
+        logging.debug("TorrentDownloadService start");
         # Open data file and parse data
         self.db.load()
 

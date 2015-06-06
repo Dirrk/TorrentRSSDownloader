@@ -4,9 +4,9 @@ import argparse
 import sys
 import logging
 
+import os
 import app.settings as settings
 from app.TorrentDownloadService import TorrentService
-
 
 __version__ = '1.3.0'
 
@@ -16,7 +16,7 @@ def main(args):
     parser = argparse.ArgumentParser(description="Monitors RSS Feeds and downloads torrents")
     parser.add_argument('-d', '--database', type=str, default=settings.DATA_FILE,
                         help="location of the database to use")
-    parser.add_argument('-e', '--env', default='', type=str, choices=['Dev', 'Stage', 'Production'])
+    parser.add_argument('-e', '--env', default=os.environ.get('ENV'), type=str, choices=['Dev', 'Stage', 'Production'])
     parser.add_argument('--upgrade', action='store_true')
     parser.add_argument('--install', action='store_true')
 
@@ -36,12 +36,18 @@ def main(args):
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(settings.LOG_LEVEL)
 
-    # Define Format
-    ch.setFormatter(
-        logging.Formatter('%(asctime)s %(levelname)s %(module)s %(funcName)s %(process)d:%(thread)d %(message)s'))
+    # Create File Handler
+    fh = logging.FileHandler('output.log')
+    fh.setLevel(settings.LOG_LEVEL)
 
-    # Add the stream handler to the root logger
+    # Define Format
+    lf = logging.Formatter('%(asctime)s %(levelname)s %(module)s %(funcName)s %(process)d:%(thread)d %(message)s')
+    ch.setFormatter(lf)
+    fh.setFormatter(lf)
+
+    # Add the handlers to the root logger
     root.addHandler(ch)
+    root.addHandler(fh)
 
     ts = TorrentService()
     if my_args.install is True:
@@ -51,6 +57,12 @@ def main(args):
         ts.upgrade()
 
     # Start application
+    logging.info("Starting TorrentService using environment=" + env)
+    logging.info("Settings:"
+                 "\nDATA_FILE: " + settings.DATA_FILE +
+                 "\nTORRENT_DIRECTORY: " + settings.TORRENT_DIRECTORY +
+                 "\nDOWNLOAD_DIRECTORY: " + settings.DOWNLOAD_DIRECTORY +
+                 "\nCOMPLETE_DIRECTORY: " + settings.COMPLETE_DIRECTORY)
     ts.start()
 
 
