@@ -27,7 +27,7 @@ EMAIL_DATA = {
 }
 TORRENT_SHARE_TIME = 14
 CLEAN_UP_TORRENTS = TORRENT_SHARE_TIME
-FEED = ("http://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=1216603;tp=" + str(os.environ.get('TOKEN')),)
+FEED = ("http://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=111111;tp=" + str(os.environ.get('TOKEN')),)
 ENV = __ENV__
 
 def apply_settings(env='Dev'):
