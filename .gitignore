@@ -1,3 +1,5 @@
 .idea
 env
 app/settings.py
+data/*
+app/*.pyc

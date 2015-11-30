@@ -5,7 +5,6 @@ import logging
 
 import re
 
-
 es = re.compile("(20[0-9][0-9].[0-9]+.[0-9]+|S[0-9]+(?:E[0-9][0-9])+)", re.IGNORECASE)
 
 

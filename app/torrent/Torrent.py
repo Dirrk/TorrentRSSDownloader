@@ -14,7 +14,6 @@ import os
 import app.settings as settings
 from app.plex.plex import PlexHelper
 
-
 logging.getLogger('requests').setLevel(logging.WARNING)
 DAY_IN_SECONDS = 86400
 

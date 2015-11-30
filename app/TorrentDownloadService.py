@@ -40,7 +40,7 @@ class TorrentService:
                              + self.db.__db_file__ + '.bak')
 
     def start(self):
-        logging.debug("TorrentDownloadService start");
+        logging.debug("TorrentDownloadService start")
         # Open data file and parse data
         self.db.load()
 
@@ -67,7 +67,7 @@ class TorrentService:
             logging.exception(e)
             logging.warn("Restarting Torrent Service in 30 seconds")
             time.sleep(30)
-            self.start()
+            exit()
 
     def _loop(self):
 

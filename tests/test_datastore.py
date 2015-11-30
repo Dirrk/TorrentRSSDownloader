@@ -7,7 +7,6 @@ from os import path
 from app.rss.Feed import Feed
 from app.rss.Subscription import Subscription
 
-
 db_folder = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\"
 db_file = db_folder + "test2_database.db"
 db_test_file = db_folder + "test_database.db"

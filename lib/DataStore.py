@@ -10,7 +10,6 @@ from app.rss.Subscription import Subscription
 from app.torrent.Torrent import Torrent
 import os.path as path
 
-
 __DB_VERSION__ = 5
 
 

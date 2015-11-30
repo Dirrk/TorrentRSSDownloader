@@ -6,7 +6,6 @@ import logging
 import requests
 from app.rss.Item import Item
 
-
 logging.getLogger("requests").setLevel(logging.WARNING)
 
 # id, url, name, frequency
