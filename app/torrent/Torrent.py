@@ -237,6 +237,15 @@ def extract_file(archive, dst):
 
     # lx use unrar
     else:
-        # run unrar
-        return True
-
+        if os.path.isfile('/usr/bin/unrar') and os.access('/usr/bin/unrar', os.X_OK):
+            # unrar x -o+ -y /data/store3/temp/Last.Week.Tonight.With.John.Oliver.S02E35.720p.HDTV.x264-BATV/last.week.tonight.with.john.oliver.s02e35.720p.hdtv.x264-batv.rar  /data/store3/temp/somefolder/some/abc/
+            cmd = 'unrar x -o+ -y', archive, dst
+            logging.info(str(cmd))
+            try:
+                subprocess.check_call(cmd)
+                return True
+            except subprocess.CalledProcessError as e:
+                logging.exception(e)
+                logging.error("Failed to extract file: ", archive)
+                return False
+        return False
