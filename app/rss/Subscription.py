@@ -29,6 +29,7 @@ class Subscription:
         self.reg_exclude = reg_exclude
         self.quality = quality
         self.last_matched = last_matched
+        self.debug = False
 
     def add_episode(self, id):
         try:
@@ -63,7 +64,7 @@ class Subscription:
         # Second round of matching
         for match in matches:
             # Size / Quality
-            if not (not (match.size == -1 or (match.size > self.min_size and match.size < self.max_size)) or not (
+            if not (not (match.size == -1 or (self.min_size < match.size < self.max_size)) or not (
                             match.quality == -1 or match.quality >= self.quality)):
 
                 # Find release info

@@ -47,7 +47,7 @@ class TorrentService:
         # Merge Plex Shows with active
         if settings.USE_PLEX is True:
             different_subs = plex.PlexHelper.find_new_subs(self.db.get_all_subscriptions())
-
+            logging.info("Downloaded new subs from plex")
             for sub in different_subs:
                 if sub.id != 0:
                     self.db.update_subscription(sub)
@@ -58,6 +58,7 @@ class TorrentService:
                         sub.feedId = feeds[0].id
 
                     self.db.add_subscription(sub)
+                    logging.info("Added subscription to " + sub.name)
 
         self._continue = True
         try:
@@ -117,6 +118,7 @@ class TorrentService:
                 sub = self.db.subscriptions[key]
                 if sub.feedId == feed.id:
                     self._loop_subs(sub, items)
+
             self.db.update_feed(feed)
 
     def _loop_subs(self, sub, items=[]):

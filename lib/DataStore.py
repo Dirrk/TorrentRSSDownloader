@@ -10,7 +10,7 @@ from app.rss.Subscription import Subscription
 from app.torrent.Torrent import Torrent
 import os.path as path
 
-__DB_VERSION__ = 5
+__DB_VERSION__ = 1
 
 
 class DataStore():
@@ -619,30 +619,12 @@ def get_torrents(conn, get_finished=False, status_since=0):
 
 def get_db_version(conn):
     conn.row_factory = dict_factory
-    d = conn.cursor()
-    d.execute(
-        '''
-            PRAGMA table_info('Settings')
-        '''
-    )
-    columns = d.fetchall()
-    if len(columns) == 2:
-        if columns[0]['name'] == 'name' and columns[1]['name'] == 'version':
-            # 1 and 2
-            d.execute("SELECT version FROM SETTINGS WHERE name='DB_VERSION'")
-            db_mod = d.fetchone()
-            if db_mod is None or db_mod.get('version') is None:
-                return 1
-            else:
-                return 2
 
-        elif columns[0]['name'] == 'id' and columns[1]['name'] == 'val':
-            # 3 and up
-            curr_version = get_settings_value(conn, 'DB_VERSION', int)
-            if curr_version is not None:
-                return curr_version
-            else:
-                raise sqlite3.DataError("Current version unknown")
+    curr_version = get_settings_value(conn, 'DB_VERSION', int)
+    if curr_version is not None:
+        return curr_version
+    else:
+        raise sqlite3.DataError("Current version unknown")
 
 
 def verify_sql_change(cursor, get_one, should_equal, table_name, ret_object=False):
@@ -691,7 +673,6 @@ def dict_factory(cursor, row):
 
 def get_all_settings(conn):
     # Change on DB Updates
-    print "Getting all settings"
     settings.TORRENT_DIRECTORY = get_settings_value(conn, 'TORRENT_DIRECTORY', str)
     settings.DOWNLOAD_DIRECTORY = get_settings_value(conn, 'DOWNLOAD_DIRECTORY', str)
     settings.COMPLETE_DIRECTORY = get_settings_value(conn, 'COMPLETE_DIRECTORY', str)

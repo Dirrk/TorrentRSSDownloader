@@ -2,4 +2,6 @@
 env
 app/settings.py
 data/*
+app/*/*.pyc
 app/*.pyc
+lib/*.pyc

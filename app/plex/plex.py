@@ -103,7 +103,7 @@ class PlexHelper():
             ret = ret[0:(-1 * len(match.group()))]
 
         # Remove white space
-        ret = re.sub('[\W]', '.', ret)
+        ret = re.sub('[\W]', '.?', ret)
 
         if ret[-1] == '.':
             ret += '*'
