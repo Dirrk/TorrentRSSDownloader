@@ -38,7 +38,7 @@ class Torrent:
             my_file = re.split('/', self.link)
             my_file = re.split('\?', my_file[-1])
 
-            t_directory = settings.TORRENT_DIRECTORY
+            t_directory = settings.INCOMING_DIRECTORY
 
             if my_file is not None:
                 self.file = os.path.join(t_directory, my_file[0])

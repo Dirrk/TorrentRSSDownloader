@@ -18,26 +18,22 @@ class TorrentService:
         self.db = DataStore()
         self._continue = False
 
-    def install(self):
+    def setup(self):
+
+        if not os.path.exists(settings.DATA_FILE):
+            self.db.create()
+
+        self.db.load()
+
+        create_folder(settings.TORRENT_DIRECTORY)
+        create_folder(settings.INCOMING_DIRECTORY)
+        create_folder(settings.DOWNLOAD_DIRECTORY)
+        create_folder(settings.COMPLETE_DIRECTORY)
 
         if os.name == 'nt' and os.path.exists(settings.SEVEN_ZIP) is False:
-            raise Exception("7zip was not configured correctly please check your settings")
-
-        if create_folder(settings.TORRENT_DIRECTORY) is True and create_folder(
-                settings.DOWNLOAD_DIRECTORY) is True and create_folder(settings.COMPLETE_DIRECTORY) is True:
-            self.db.create()
-        else:
-            raise Exception("Could not create torrent folders are they configured correctly?")
-
-    def upgrade(self):
-
-        shutil.copyfile(self.db.__db_file__, self.db.__db_file__ + '.bak')
-
-        if self.db.upgrade() is True:
-            os.remove(self.db.__db_file__ + '.bak')
-        else:
-            raise IndexError("Failed to upgrade database, backed up current database to location:\r\n"
-                             + self.db.__db_file__ + '.bak')
+            logging.warn("7zip was not configured correctly, you will not be able to extract archived torrents without it")
+        elif not (os.path.isfile('/usr/bin/unrar') and os.path.isfile('/bin/unrar')):
+            logging.warn("unrar was not configured correctly, you will not be able to extract archived torrents without it")
 
     def start(self):
         logging.debug("TorrentDownloadService start")

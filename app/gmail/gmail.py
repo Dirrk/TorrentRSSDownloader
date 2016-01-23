@@ -9,7 +9,7 @@ import app.plex.plex as plex
 import app.settings as settings
 
 
-def send_gmail(subject, html_message, **kwargs):
+def send_email(subject, html_message, **kwargs):
     account_user = kwargs.get('AccountUser', None)
     account_pwd = kwargs.get('AccountPass', None)
     account_host = kwargs.get('AccountHost', 'smtp.gmail.com')
@@ -30,7 +30,7 @@ def send_gmail(subject, html_message, **kwargs):
         server.login(account_user, account_pwd)
         server.sendmail(account_user, to, msg.as_string())
         server.close()
-        logging.info('Sent gmail using gmail: ' + str(subject))
+        logging.info('Sent email: ' + str(subject))
         return True
     except Exception as e:
         logging.exception(e)
@@ -54,8 +54,10 @@ def send_email_report(all_torrents, callback):
 
     rows_in_report.append("</table></html>")
     email_data = {
-        'AccountUser': settings.EMAIL_DATA['ACCOUNT']['USER'],
-        'AccountPass': settings.EMAIL_DATA['ACCOUNT']['PASS'],
-        'to': settings.EMAIL_DATA['TO']
+        'AccountUser': settings.EMAIL_ACCOUNT_USER,
+        'AccountPass': settings.EMAIL_ACCOUNT_PASS,
+        'AccountHost': settings.EMAIL_ACCOUNT_HOST,
+        'AccountPort': settings.EMAIL_ACCOUNT_PORT,
+        'to': settings.EMAIL_TO
     }
-    send_gmail("Weekly Torrent Report", "\r\n".join(rows_in_report), **email_data)
+    send_email("Weekly Torrent Report", "\r\n".join(rows_in_report), **email_data)

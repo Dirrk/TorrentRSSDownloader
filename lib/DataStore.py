@@ -13,7 +13,7 @@ import os.path as path
 __DB_VERSION__ = 1
 
 
-class DataStore():
+class DataStore ():
     def __init__(self, a_file=None):
         self.feeds = {}
         self.subscriptions = {}
@@ -97,6 +97,7 @@ class DataStore():
             )
             c.execute("INSERT INTO SETTINGS VALUES ('DB_VERSION', ?);", (str(__DB_VERSION__),))
             c.execute("INSERT INTO SETTINGS VALUES ('MODIFIED', '1');")
+            c.execute("INSERT INTO SETTINGS VALUES ('INCOMING_DIRECTORY', ?);", (str(settings.INCOMING_DIRECTORY),))
             c.execute("INSERT INTO SETTINGS VALUES ('TORRENT_DIRECTORY', ?);", (str(settings.TORRENT_DIRECTORY),))
             c.execute("INSERT INTO SETTINGS VALUES ('DOWNLOAD_DIRECTORY', ?);", (str(settings.DOWNLOAD_DIRECTORY),))
             c.execute("INSERT INTO SETTINGS VALUES ('COMPLETE_DIRECTORY', ?);", (str(settings.COMPLETE_DIRECTORY),))
@@ -104,13 +105,17 @@ class DataStore():
             c.execute("INSERT INTO SETTINGS VALUES ('PLEX_HOST', ?);", (str(settings.PLEX_HOST),))
             c.execute("INSERT INTO SETTINGS VALUES ('PLEX_TV_SECTION', ?);", (str(settings.PLEX_TV_SECTION),))
             c.execute("INSERT INTO SETTINGS VALUES ('USE_PLEX', ?);", (str(settings.USE_PLEX),))
-            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_TO', ?);", (str(settings.EMAIL_DATA['TO']),))
+            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_TO', ?);", (str(settings.EMAIL_TO),))
             c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ACCOUNT_USER', ?);",
-                      (str(settings.EMAIL_DATA['ACCOUNT']['USER']),))
+                      (str(settings.EMAIL_ACCOUNT_USER),))
             c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ACCOUNT_PASS', ?);",
-                      (str(settings.EMAIL_DATA['ACCOUNT']['PASS']),))
-            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_FREQUENCY', ?);", (str(settings.EMAIL_DATA['FREQUENCY']),))
-            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ENABLED', ?);", (str(settings.EMAIL_DATA['ENABLED']),))
+                      (str(settings.EMAIL_ACCOUNT_PASS),))
+            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ACCOUNT_HOST', ?);",
+                      (str(settings.EMAIL_ACCOUNT_HOST),))
+            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ACCOUNT_PORT', ?);",
+                      (str(settings.EMAIL_ACCOUNT_PORT),))
+            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_FREQUENCY', ?);", (str(settings.EMAIL_FREQUENCY),))
+            c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ENABLED', ?);", (str(settings.EMAIL_ENABLED),))
             c.execute("INSERT INTO SETTINGS VALUES ('CLEAN_UP_TORRENTS', ?);", (str(settings.CLEAN_UP_TORRENTS),))
 
             conn.commit()
@@ -183,167 +188,7 @@ class DataStore():
         conn.close()
 
         count = -1
-
-        while current_version != db_version and count <= db_version:
-
-            file = self.__db_file__
-            conn = sqlite3.connect(self.__db_file__)
-
-            c = conn.cursor()
-            if current_version <= 1:
-                # run steps to upgrade
-                c.execute(
-                    '''
-                      ALTER TABLE Torrents
-                      ADD COLUMN status_time INTEGER DEFAULT '0'
-                    ''')
-                c.execute("INSERT INTO SETTINGS VALUES ('DB_VERSION', 2);")
-                conn.commit()
-
-            elif current_version == 2:
-                # run steps to upgrade
-                # Create Temporary Table
-                c.execute(
-                    '''
-                        CREATE TABLE SettingsNew
-                        (
-                            id TEXT NOT NULL PRIMARY KEY,
-                            val TEXT NOT NULL DEFAULT '0'
-                        );
-                    '''
-                )
-                # Fill with data
-                c.execute("INSERT INTO SettingsNew SELECT * FROM Settings")
-
-                # Change the version
-                c.execute("UPDATE SettingsNew SET val = 3 WHERE id = 'DB_VERSION'")
-
-                # Verify the version and creation
-                if verify_sql_change(c, "SELECT val FROM SettingsNew WHERE id='DB_VERSION'", '3',
-                                     'SettingsNew') is not True:
-                    conn.rollback()
-                    conn.close()
-                    raise sqlite3.DatabaseError("Failed to upgrade to db_version 3")
-
-                conn.commit()
-                logging.info("Backed up changes and proceeding to complete upgrade")
-
-                # Drop Settings Table
-                c.execute("DROP TABLE Settings")
-
-                # Rename Temporary Table to Settings
-                c.execute("ALTER TABLE SettingsNew RENAME TO Settings")
-                # verify
-                if verify_sql_change(c, "SELECT val FROM Settings WHERE id='DB_VERSION'", '3',
-                                     'Settings') is not True:
-                    conn.rollback()
-                    conn.close()
-                    raise sqlite3.DatabaseError("Failed to finish table conversion for db_version 3")
-                conn.commit()
-
-            elif current_version == 3:
-                # run steps to upgrade to 4
-                # Create Temporary Table
-                c.execute(
-                    '''
-                        CREATE TABLE SubscriptionsBak
-                        (
-                            id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-                            name TEXT NOT NULL,
-                            feedid INTEGER NOT NULL,
-                            plex_id INTEGER DEFAULT '0',
-                            enabled INTEGER DEFAULT '1',
-                            reg_allow TEXT DEFAULT '',
-                            match_type TEXT DEFAULT 'episode',
-                            preferred_release TEXT DEFAULT '',
-                            max_size INTEGER DEFAULT '1000000000',
-                            min_size INTEGER DEFAULT '0',
-                            reg_exclude TEXT DEFAULT '555DO-NOT-MATCH-THIS-REGEX-ESCAPE555',
-                            quality INTEGER DEFAULT '-1',
-                            last_matched INTEGER DEFAULT '0'
-                        );
-                    '''
-                )
-                # Fill with data
-                c.execute('''
-                      INSERT INTO SubscriptionsBak (id, name, feedid, plex_id, enabled) SELECT id, name, feedid,
-                      plex_id, enabled FROM Subscriptions
-                          ''')
-                # Change the version
-                c.execute("UPDATE Settings SET val = 4 WHERE id = 'DB_VERSION'")
-                conn.commit()
-
-                # Retrieve options
-                c.execute("SELECT id, options FROM Subscriptions")
-                all_subs = []
-                for sub in c.fetchall():
-                    if sub is not None and len(sub) == 2:
-                        id = sub[0]
-                        options = json.loads(sub[1])
-                        if options.get('episode_match') is True:
-                            match_type = 'episode'
-                        else:
-                            match_type = 'once'
-
-                        a_sub_arr = [options.get('reg_allow'), match_type, options.get('preferred_release'),
-                                     options.get('maxSize'), options.get('minSsize'), options.get('reg_exclude'),
-                                     options.get('quality'), options.get('lastMatched'), id]
-
-                        all_subs.append(a_sub_arr)
-
-                # Update DB
-                for a_sub in all_subs:
-                    c.execute('''
-                                UPDATE SubscriptionsBak SET
-                                    reg_allow=?,
-                                    match_type=?,
-                                    preferred_release=?,
-                                    max_size=?,
-                                    min_size=?,
-                                    reg_exclude=?,
-                                    quality=?,
-                                    last_matched=?
-                                WHERE id=?
-                              ''', a_sub)
-
-                # Drop Settings Table
-                c.execute("DROP TABLE Subscriptions")
-
-                # Rename Temporary Table to Settings
-                c.execute("ALTER TABLE SubscriptionsBak RENAME TO Subscriptions")
-
-                # Alter Torrents Table
-                c.execute("ALTER TABLE Torrents ADD COLUMN episode TEXT DEFAULT ''")
-
-                conn.commit()
-            elif current_version == 4:
-                c.execute("DELETE FROM Settings WHERE id='Feeds'")
-                c.execute("DELETE FROM Settings WHERE id='MODIFIED'")
-                c.execute("INSERT INTO SETTINGS VALUES ('MODIFIED', '1');")
-                c.execute("INSERT INTO SETTINGS VALUES ('TORRENT_DIRECTORY', ?);", (str(settings.TORRENT_DIRECTORY),))
-                c.execute("INSERT INTO SETTINGS VALUES ('DOWNLOAD_DIRECTORY', ?);", (str(settings.DOWNLOAD_DIRECTORY),))
-                c.execute("INSERT INTO SETTINGS VALUES ('COMPLETE_DIRECTORY', ?);", (str(settings.COMPLETE_DIRECTORY),))
-                c.execute("INSERT INTO SETTINGS VALUES ('SEVEN_ZIP', ?);", (str(settings.SEVEN_ZIP),))
-                c.execute("INSERT INTO SETTINGS VALUES ('PLEX_HOST', ?);", (str(settings.PLEX_HOST),))
-                c.execute("INSERT INTO SETTINGS VALUES ('PLEX_TV_SECTION', ?);", (str(settings.PLEX_TV_SECTION),))
-                c.execute("INSERT INTO SETTINGS VALUES ('USE_PLEX', ?);", (str(settings.USE_PLEX),))
-                c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_TO', ?);", (str(settings.EMAIL_DATA['TO']),))
-                c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ACCOUNT_USER', ?);",
-                          (str(settings.EMAIL_DATA['ACCOUNT']['USER']),))
-                c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ACCOUNT_PASS', ?);",
-                          (str(settings.EMAIL_DATA['ACCOUNT']['PASS']),))
-                c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_FREQUENCY', ?);",
-                          (str(settings.EMAIL_DATA['FREQUENCY']),))
-                c.execute("INSERT INTO SETTINGS VALUES ('EMAIL_ENABLED', ?);", (str(settings.EMAIL_DATA['ENABLED']),))
-                c.execute("INSERT INTO SETTINGS VALUES ('CLEAN_UP_TORRENTS', ?);", (str(settings.CLEAN_UP_TORRENTS),))
-                c.execute("UPDATE Settings SET val = 5 WHERE id = 'DB_VERSION'")
-                conn.commit()
-
-            else:
-                count += 1
-
-            current_version = get_db_version(conn)
-            conn.close()
+        # No db upgrades yet
 
         self.db_version = current_version
 
@@ -362,7 +207,7 @@ class DataStore():
         try:
             insert_or_update_value(conn, id, val)
         except Exception as e:
-            print "Error setting the key:", id, "to", val
+            logging.error("Failed on write for " + str(id))
             logging.exception(e)
         conn.close()
 
@@ -519,6 +364,8 @@ def get_settings_value(conn, key, a_type=str):
         if db_mod is None:
             return None
         else:
+            if a_type == bool:
+                return db_mod == 'True'
             return a_type(db_mod)
     except Exception as e:
         print e
@@ -673,6 +520,7 @@ def dict_factory(cursor, row):
 
 def get_all_settings(conn):
     # Change on DB Updates
+    settings.INCOMING_DIRECTORY = get_settings_value(conn, 'INCOMING_DIRECTORY', str)
     settings.TORRENT_DIRECTORY = get_settings_value(conn, 'TORRENT_DIRECTORY', str)
     settings.DOWNLOAD_DIRECTORY = get_settings_value(conn, 'DOWNLOAD_DIRECTORY', str)
     settings.COMPLETE_DIRECTORY = get_settings_value(conn, 'COMPLETE_DIRECTORY', str)
@@ -680,9 +528,11 @@ def get_all_settings(conn):
     settings.PLEX_HOST = get_settings_value(conn, 'PLEX_HOST', str)
     settings.PLEX_TV_SECTION = get_settings_value(conn, 'PLEX_TV_SECTION', str)
     settings.USE_PLEX = get_settings_value(conn, 'USE_PLEX', bool)
-    settings.EMAIL_DATA['TO'] = get_settings_value(conn, 'EMAIL_TO', str)
-    settings.EMAIL_DATA['FREQUENCY'] = get_settings_value(conn, 'EMAIL_FREQUENCY', int)
-    settings.EMAIL_DATA['ENABLED'] = get_settings_value(conn, 'EMAIL_ENABLED', bool)
-    settings.EMAIL_DATA['ACCOUNT']['USER'] = get_settings_value(conn, 'EMAIL_ACCOUNT_USER', str)
-    settings.EMAIL_DATA['ACCOUNT']['PASS'] = get_settings_value(conn, 'EMAIL_ACCOUNT_PASS', str)
+    settings.EMAIL_TO = get_settings_value(conn, 'EMAIL_TO', str)
+    settings.EMAIL_FREQUENCY = get_settings_value(conn, 'EMAIL_FREQUENCY', int)
+    settings.EMAIL_ENABLED = get_settings_value(conn, 'EMAIL_ENABLED', bool)
+    settings.EMAIL_ACCOUNT_USER = get_settings_value(conn, 'EMAIL_ACCOUNT_USER', str)
+    settings.EMAIL_ACCOUNT_PASS = get_settings_value(conn, 'EMAIL_ACCOUNT_PASS', str)
+    settings.EMAIL_ACCOUNT_HOST = get_settings_value(conn, 'EMAIL_ACCOUNT_HOST', str)
+    settings.EMAIL_ACCOUNT_PORT = get_settings_value(conn, 'EMAIL_ACCOUNT_PORT', str)
     settings.CLEAN_UP_TORRENTS = get_settings_value(conn, 'CLEAN_UP_TORRENTS', int)

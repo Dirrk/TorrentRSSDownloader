@@ -1,59 +1,48 @@
-__author__ = 'Dirrk'
+__author__ = 'Derek Rada'
 
-import os
+# Normal python logging levels https://docs.python.org/2/library/logging.html#levels
+LOG_LEVEL = 20
 
+# Required for windows
+SEVEN_ZIP = ""
 
-__ENV__ = os.environ.get('ENV')
-LOG_LEVEL = 10
-DATA_FILE = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\dev-torrents.db"
+# Plex
+USE_PLEX = False
 
-TORRENT_DIRECTORY = "F:\\test-area\\dev\\monitor"
-DOWNLOAD_DIRECTORY = "F:\\test-area\\dev\\downloading"
-COMPLETE_DIRECTORY = "F:\\test-area\\dev\\complete"
-SEVEN_ZIP = "C:\\7zip\\7z.exe"
-
+# Your local plex server
 PLEX_HOST = 'localhost:32400'
-PLEX_TV_SECTION = 2
-USE_PLEX = True
 
-EMAIL_DATA = {
-    "TO": str(os.environ.get('SEND_TO')),
-    "ACCOUNT": {
-        "USER": str(os.environ.get('EMAIL_ACCOUNT_USER')),
-        "PASS": str(os.environ.get('EMAIL_ACCOUNT_PASS')),
-    },
-    "FREQUENCY": 7,
-    "ENABLED": False
-}
+# You must pick your tv section from the list to get the list open your browser to your plex_host with
+# uri /library/sections and choose the "key" it will be a string of a number that has the type show
+# in example curl http://localhost:32400/library/sections
+PLEX_TV_SECTION = 1
+
+
+# Email
+# This can be setup later or not at all and currently only supports gmail
+EMAIL_ENABLED = False
+
+# Who should the email go to?
+EMAIL_TO = ""
+
+# The account sending the email
+EMAIL_ACCOUNT_USER = ""
+EMAIL_ACCOUNT_PASS = ""
+EMAIL_ACCOUNT_PORT = 587
+EMAIL_ACCOUNT_HOST = "smtp.gmail.com"
+
+# How frequently should the service send email updates
+EMAIL_FREQUENCY = 7
+
+
+# Torrent Cleanup
 TORRENT_SHARE_TIME = 14
 CLEAN_UP_TORRENTS = TORRENT_SHARE_TIME
-FEED = ("http://www.iptorrents.com/torrents/rss?download;l66;l65;l5;l4;u=111111;tp=" + str(os.environ.get('TOKEN')),)
-ENV = __ENV__
 
-def apply_settings(env='Dev'):
-    global LOG_LEVEL, DATA_FILE, TORRENT_DIRECTORY, DOWNLOAD_DIRECTORY, COMPLETE_DIRECTORY, ENV
+# Files / Folders
+DATA_FILE = "./torrents.db"
 
-    if env == 'Production':
-        LOG_LEVEL = 20
-        DATA_FILE = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\torrents.db"
-        TORRENT_DIRECTORY = "F:\\Incoming\\monitor"
-        DOWNLOAD_DIRECTORY = "F:\\Incoming"
-        COMPLETE_DIRECTORY = "Z:\\Completed"
-        return "Production"
-
-    elif env == 'Stage':
-        DATA_FILE = "C:\\Users\\derek_000\\PycharmProjects\\TorrentDownloader\\data\\stage-torrents.db"
-        TORRENT_DIRECTORY = "F:\\test-area\\stage\\monitor"
-        DOWNLOAD_DIRECTORY = "F:\\test-area\\stage\\downloading"
-        COMPLETE_DIRECTORY = "F:\\test-area\\stage\\complete"
-        return "Stage"
-
-    else:
-        TORRENT_DIRECTORY = "F:\\test-area\\dev\\monitor"
-        DOWNLOAD_DIRECTORY = "F:\\test-area\\dev\\downloading"
-        COMPLETE_DIRECTORY = "F:\\test-area\\dev\\complete"
-        return "Dev"
-
-    ENV = env
-
-apply_settings(__ENV__)
+TORRENT_DIRECTORY = "./data/torrent"
+INCOMING_DIRECTORY = "./data/incoming"
+DOWNLOAD_DIRECTORY = "./data/download"
+COMPLETE_DIRECTORY = "./data/complete"
